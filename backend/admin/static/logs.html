@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>运行日志 · A股复盘运营台</title>
+<link rel="stylesheet" href="__ADMIN_BASE__/static/admin.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232563EB'/%3E%3Cpath d='M7 21l5-6 4 3 4-6 5 4' fill='none' stroke='%23fff' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+</head>
+<body data-base="__ADMIN_BASE__">
+<div class="shell">
+  <aside class="side">
+    <div class="brand">
+      <span class="mk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-6 4 3 5-7 4 4"/><path d="M3 21h18"/></svg></span>
+      <span class="tt"><b>复盘运营台</b></span>
+    </div>
+    <nav class="nav">
+      <div class="grp">监控</div>
+      <a href="__ADMIN_BASE__/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>运营概览</a>
+      <a href="__ADMIN_BASE__/tasks"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1.2"/><circle cx="3.5" cy="12" r="1.2"/><circle cx="3.5" cy="18" r="1.2"/></svg>采集任务</a>
+      <a href="__ADMIN_BASE__/sources"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5.5" rx="8" ry="3"/><path d="M4 5.5v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/><path d="M4 11.5v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>数据源</a>
+      <a href="__ADMIN_BASE__/logs" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 16.5v.5"/><path d="M10.3 3.9L2.6 17.1A2 2 0 004.3 20h15.4a2 2 0 001.7-2.9L13.7 3.9a2 2 0 00-3.4 0z"/></svg>运行日志<span class="bdg" id="navErr" style="display:none">-</span></a>
+      <div class="grp">系统</div>
+      <a href="__ADMIN_BASE__/system"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.6 1.6 0 00-2.7 1.1V21a2 2 0 11-4 0v-.1A1.6 1.6 0 006.6 19.4l-.1.1a2 2 0 11-2.8-2.8l.1-.1A1.6 1.6 0 003 15H3a2 2 0 110-4h.1a1.6 1.6 0 001.1-2.7l-.1-.1a2 2 0 112.8-2.8l.1.1A1.6 1.6 0 009 3.6V3a2 2 0 114 0v.1a1.6 1.6 0 002.7 1.1l.1-.1a2 2 0 112.8 2.8l-.1.1a1.6 1.6 0 001.1 2.7H21a2 2 0 110 4h-.1a1.6 1.6 0 00-1.5 1z"/></svg>调度与日历</a>
+    </nav>
+    <div class="side-foot">
+      <div class="acct">
+        <span class="av" id="userAv">—</span>
+        <span class="acct-tx"><b id="userName">—</b><small>运营账号</small></span>
+        <span class="on" title="服务在线"><i></i>在线</span>
+      </div>
+      <div class="foot-links">
+        <a href="/" target="_blank"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9"/><path d="M19 14v5a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1h5"/></svg>打开前台看板<svg class="ext" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M8 7h9v9"/></svg></a>
+        <a href="__ADMIN_BASE__/logout" data-logout><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 17l5-5-5-5M21 12H9"/><path d="M12 3H5a1 1 0 00-1 1v16a1 1 0 001 1h7"/></svg>退出登录</a>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="top">
+      <h1>运行日志</h1>
+      <span class="sub">每次采集的执行结果与失败原因</span>
+      <span class="sp"></span>
+      <span class="clock" id="clock">—</span>
+      <button class="btn" onclick="refresh()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 11-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>刷新</button>
+    </header>
+
+    <div class="wrap">
+      <!-- 总览：一眼看清有没有出问题 -->
+      <div class="statbar">
+        <div class="statcell">
+          <label>采集任务总数</label>
+          <span class="v" id="sTotal">—</span>
+          <span class="s" id="sTotalSub">全部来源的历史累计</span>
+        </div>
+        <div class="statcell good">
+          <label>成功</label>
+          <span class="v" id="sOk">—</span>
+          <span class="s" id="sOkSub">成功率 —</span>
+        </div>
+        <div class="statcell bad">
+          <label>失败</label>
+          <span class="v" id="sBad">—</span>
+          <span class="s" id="sBadSub">—</span>
+        </div>
+        <div class="statcell">
+          <label>最近一次成功</label>
+          <span class="v" id="sLast" style="font-size:15px">—</span>
+          <span class="s" id="sLastSub">—</span>
+        </div>
+      </div>
+
+      <section class="card">
+        <div class="card-hd">
+          <h2>运行记录</h2>
+          <span class="hint">按开始时间倒序 · 失败记录点一下可展开完整原因</span>
+          <span class="sp"></span>
+          <span class="hint" id="rangeTxt"></span>
+        </div>
+        <div class="filterbar">
+          <div class="chips" id="stChips">
+            <button class="chip on" data-st="">全部 <b id="cAll">0</b></button>
+            <button class="chip" data-st="failed">失败 <b id="cBad">0</b></button>
+            <button class="chip" data-st="success">成功 <b id="cOk">0</b></button>
+          </div>
+          <div class="fld"><label>类型</label><select id="fType"></select></div>
+          <div class="fld"><label>来源</label><select id="fSrc"></select></div>
+          <div class="fld"><label>交易日</label><input type="date" id="fDay" style="width:140px"></div>
+          <span class="sp"></span>
+        </div>
+        <div class="card-bd flush">
+          <div class="tbl-wrap plain"><table class="tbl fixed">
+            <colgroup>
+              <col style="width:16%"><col style="width:12%"><col style="width:12%">
+              <col><col style="width:10%"><col style="width:9%"><col style="width:8%">
+            </colgroup>
+            <thead><tr>
+              <th>开始时间</th><th>交易日</th><th>任务</th><th>触发来源</th>
+              <th>状态</th><th class="n">耗时</th><th class="n">写入</th>
+            </tr></thead>
+            <tbody id="logRows"><tr><td colspan="7" class="empty">加载中…</td></tr></tbody>
+          </table></div>
+        </div>
+        <div class="pager" id="pager"></div>
+      </section>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"><span class="dot"></span><span id="toastMsg"></span></div>
+
+<script src="__ADMIN_BASE__/static/admin-common.js"></script>
+<script>
+/* 默认只看日常任务：库里 8 千多条是历史回补，全量视图会把它淹掉 */
+const F = { page: 1, page_size: 20, status: '', task_type: '', src: 'daily', trade_date: '' };
+let stats = null;
+
+function fillSelects(){
+  q('#fType').innerHTML = TYPE_OPTIONS.map(o=>`<option value="${o.v}">${o.name}</option>`).join('');
+  q('#fSrc').innerHTML = SRC_OPTIONS.map(o=>`<option value="${o.v}" title="${esc(o.hint||'')}">${o.name}</option>`).join('');
+  q('#fType').value = F.task_type;
+  q('#fSrc').value = F.src;
+}
+
+function rowHTML(r){
+  const t = taskType(r.task_type);
+  const s = triggerSrc(r.trigger_by);
+  const err = r.error_msg ? String(r.error_msg) : '';
+  return `<tr>
+      <td class="mono">${esc(String(r.started_at||'—').slice(0,19)||'—')}</td>
+      <td class="mono">${fmtDate(r.trade_date)}</td>
+      <td><span class="tag ${t.cls}" title="${esc(t.desc)}">${esc(t.name)}</span></td>
+      <td><span class="tag src ${s.cls}" title="原始记录：${esc(s.raw)}">${esc(s.name)}</span>${rawSuffix(s.raw)}</td>
+      <td><span class="pill ${esc(r.status||'')}">${statusText(r.status)}</span></td>
+      <td class="n mono">${logDur(r)}</td>
+      <td class="n mono">${r.rows_written==null?'—':r.rows_written}</td>
+    </tr>` + (err ? `<tr class="errsub" title="点击展开/收起">
+      <td colspan="7" class="err-cell">
+        <div class="err-row">
+          <span class="err-k">失败原因</span>
+          <span class="clip">${esc(err)}</span>
+          <span class="err-toggle">展开</span>
+        </div>
+      </td>
+    </tr>` : '');
+}
+
+async function loadStats(){
+  const qs = new URLSearchParams();
+  if(F.src) qs.set('src', F.src);
+  if(F.task_type) qs.set('task_type', F.task_type);
+  try{ stats = await api('/api/logs/stats?' + qs.toString()); }catch(e){ return; }
+  const s = stats;
+  q('#sTotal').textContent = (s.total||0).toLocaleString();
+  q('#sTotalSub').textContent = `日常 ${(s.daily||0).toLocaleString()} · 历史回补 ${(s.backfill||0).toLocaleString()}`;
+  q('#sOk').textContent = (s.success||0).toLocaleString();
+  const rate = s.total ? (s.success||0) / s.total * 100 : 0;
+  q('#sOkSub').textContent = '成功率 ' + rate.toFixed(rate >= 99.5 ? 2 : 1) + '%';
+  q('#sBad').textContent = (s.failed||0).toLocaleString();
+  q('#sBadSub').textContent = s.last_failed ? '最近 ' + rel(s.last_failed) : '暂无失败记录';
+  q('#sLast').textContent = s.last_success ? String(s.last_success).slice(5,16) : '—';
+  q('#sLastSub').textContent = s.last_success ? rel(s.last_success) : '还没有成功记录';
+  // chip 数字按当前来源/类型口径，和表格「共 N 条」保持一致
+  const f = s.filtered || s;
+  q('#cAll').textContent = (f.total||0).toLocaleString();
+  q('#cOk').textContent = (f.success||0).toLocaleString();
+  q('#cBad').textContent = (f.failed||0).toLocaleString();
+
+  const bdg = q('#navErr');
+  if(bdg){
+    const n = (s.failed||0) + (s.running||0);
+    bdg.textContent = n; bdg.style.cssText = n ? 'background:rgba(239,68,68,.22);color:#FCA5A5' : 'display:none';
+  }
+}
+
+async function loadLogs(){
+  const tbody = q('#logRows');
+  const qs = new URLSearchParams({ page: F.page, page_size: F.page_size });
+  if(F.status) qs.set('status', F.status);
+  if(F.task_type) qs.set('task_type', F.task_type);
+  if(F.src) qs.set('src', F.src);
+  if(F.trade_date) qs.set('trade_date', F.trade_date);
+  let d = null;
+  try{ d = await api('/api/logs?' + qs.toString()); }catch(e){}
+  if(!d){
+    tbody.innerHTML = '<tr><td colspan="7" class="empty">加载失败，请点「刷新」重试</td></tr>';
+    return;
+  }
+  F.page = d.page;
+  if(!d.rows.length){
+    const filtered = F.status || F.task_type || F.trade_date || F.src !== 'daily';
+    tbody.innerHTML = `<tr><td colspan="7" class="empty">没有符合条件的记录${
+      filtered ? ' · 试试把筛选条件切回「全部」' : ''}</td></tr>`;
+  }else{
+    tbody.innerHTML = d.rows.map(rowHTML).join('');
+  }
+  q('#rangeTxt').textContent = F.src === 'daily' && !F.trade_date ? '已排除历史回补记录' : '';
+  renderPager(q('#pager'), d, p => { F.page = p; loadLogs(); });
+}
+
+function refresh(){
+  loadStats(); loadLogs();
+  toast('已刷新');
+}
+
+/* 点失败行展开完整错误 */
+q('#logRows').addEventListener('click', e=>{
+  const tr = e.target.closest('tr.errsub');
+  if(!tr) return;
+  tr.classList.toggle('expanded');
+  const tg = tr.querySelector('.err-toggle');
+  if(tg) tg.textContent = tr.classList.contains('expanded') ? '收起' : '展开';
+});
+
+/* 筛选交互 */
+const stChips = q('#stChips');
+stChips.addEventListener('click', e=>{
+  const c = e.target.closest('.chip'); if(!c) return;
+  F.status = c.dataset.st; F.page = 1;
+  stChips.querySelectorAll('.chip').forEach(x=>x.classList.toggle('on', x===c));
+  loadLogs();
+});
+function onlyFailed(){
+  F.status = 'failed'; F.page = 1;
+  stChips.querySelectorAll('.chip').forEach(x=>x.classList.toggle('on', x.dataset.st==='failed'));
+  loadLogs();
+  document.querySelector('.card').scrollIntoView({behavior:'smooth', block:'start'});
+}
+q('#fType').addEventListener('change', e=>{ F.task_type = e.target.value; F.page = 1; loadStats(); loadLogs(); });
+q('#fSrc').addEventListener('change', e=>{ F.src = e.target.value; F.page = 1; loadStats(); loadLogs(); });
+q('#fDay').addEventListener('change', e=>{ F.trade_date = e.target.value; F.page = 1; loadLogs(); });
+
+fillSelects();
+tickClock(); setInterval(tickClock, 1000);
+loadMe();
+loadStats();
+loadLogs();
+</script>
+</body>
+</html>

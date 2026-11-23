@@ -1,0 +1,15 @@
+{
+  "name": "a3x1-echarts-build",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Build a slimmed ECharts bundle for web/vendor/echarts.slim.js",
+  "scripts": {
+    "build": "esbuild entry.js --bundle --minify --format=iife --target=es2017 --legal-comments=none --banner:js=\"/*! ECharts custom build: line+candlestick+bar + grid/tooltip/markLine/axisPointer/legend/title + canvas. Apache-2.0. */\" --outfile=../../web/vendor/echarts.slim.js"
+  },
+  "dependencies": {
+    "echarts": "5.6.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.24.0"
+  }
+}

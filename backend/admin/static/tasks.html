@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>采集任务 · A股复盘运营台</title>
+<link rel="stylesheet" href="__ADMIN_BASE__/static/admin.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232563EB'/%3E%3Cpath d='M7 21l5-6 4 3 4-6 5 4' fill='none' stroke='%23fff' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+</head>
+<body data-base="__ADMIN_BASE__">
+<div class="shell">
+  <aside class="side">
+    <div class="brand">
+      <span class="mk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-6 4 3 5-7 4 4"/><path d="M3 21h18"/></svg></span>
+      <span class="tt"><b>复盘运营台</b></span>
+    </div>
+    <nav class="nav">
+      <div class="grp">监控</div>
+      <a href="__ADMIN_BASE__/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>运营概览</a>
+      <a href="__ADMIN_BASE__/tasks" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1.2"/><circle cx="3.5" cy="12" r="1.2"/><circle cx="3.5" cy="18" r="1.2"/></svg>采集任务<span class="bdg" id="navTasks" style="display:none">-</span></a>
+      <a href="__ADMIN_BASE__/sources"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5.5" rx="8" ry="3"/><path d="M4 5.5v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/><path d="M4 11.5v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>数据源</a>
+      <a href="__ADMIN_BASE__/logs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 16.5v.5"/><path d="M10.3 3.9L2.6 17.1A2 2 0 004.3 20h15.4a2 2 0 001.7-2.9L13.7 3.9a2 2 0 00-3.4 0z"/></svg>运行日志<span class="bdg" id="navErr" style="display:none">-</span></a>
+      <div class="grp">系统</div>
+      <a href="__ADMIN_BASE__/system"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.6 1.6 0 00-2.7 1.1V21a2 2 0 11-4 0v-.1A1.6 1.6 0 006.6 19.4l-.1.1a2 2 0 11-2.8-2.8l.1-.1A1.6 1.6 0 003 15H3a2 2 0 110-4h.1a1.6 1.6 0 001.1-2.7l-.1-.1a2 2 0 112.8-2.8l.1.1A1.6 1.6 0 009 3.6V3a2 2 0 114 0v.1a1.6 1.6 0 002.7 1.1l.1-.1a2 2 0 112.8 2.8l-.1.1a1.6 1.6 0 001.1 2.7H21a2 2 0 110 4h-.1a1.6 1.6 0 00-1.5 1z"/></svg>调度与日历</a>
+    </nav>
+    <div class="side-foot">
+      <div class="acct">
+        <span class="av" id="userAv">—</span>
+        <span class="acct-tx"><b id="userName">—</b><small>运营账号</small></span>
+        <span class="on" title="服务在线"><i></i>在线</span>
+      </div>
+      <div class="foot-links">
+        <a href="/" target="_blank"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9"/><path d="M19 14v5a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1h5"/></svg>打开前台看板<svg class="ext" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M8 7h9v9"/></svg></a>
+        <a href="__ADMIN_BASE__/logout" data-logout><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 17l5-5-5-5M21 12H9"/><path d="M12 3H5a1 1 0 00-1 1v16a1 1 0 001 1h7"/></svg>退出登录</a>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="top">
+      <h1>采集任务</h1>
+      <span class="sub">手动触发 · 任务记录</span>
+      <span class="sp"></span>
+      <span class="clock" id="clock">—</span>
+      <button class="btn" onclick="refresh()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 11-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>刷新</button>
+    </header>
+
+    <div class="wrap">
+      <!-- 手动触发 -->
+      <section class="card">
+        <div class="card-hd">
+          <h2>手动触发 / 补采</h2>
+          <span class="hint">按交易日立即执行一次采集，结果会写进下方的任务记录</span>
+        </div>
+        <div class="card-bd">
+          <div class="form">
+            <div class="fld"><label>交易日</label><input type="date" id="fDate"></div>
+            <div class="fld"><label>采集模式</label>
+              <select id="fMode">
+                <option value="full">收盘全量 · 完整复盘数据</option>
+                <option value="intraday">盘中轻量 · 只刷实时</option>
+              </select>
+            </div>
+            <button class="btn pri" id="runBtn" onclick="runCollect()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l14 8-14 8V4z"/></svg>开始采集</button>
+          </div>
+          <div class="task-line" id="taskLine"><span class="sp">尚未执行任务 · 收盘全量跑完整流程并落定复盘快照，盘中轻量只更新当日实时字段</span></div>
+        </div>
+      </section>
+
+      <!-- 任务记录 -->
+      <section class="card">
+        <div class="card-hd">
+          <h2>任务记录</h2>
+          <span class="hint">按开始时间倒序 · 失败任务可展开看原因</span>
+          <span class="sp"></span>
+          <span class="hint" id="rangeTxt"></span>
+        </div>
+        <div class="filterbar">
+          <div class="chips" id="stChips">
+            <button class="chip on" data-st="">全部 <b id="cAll">0</b></button>
+            <button class="chip" data-st="success">成功 <b id="cOk">0</b></button>
+            <button class="chip" data-st="failed">失败 <b id="cBad">0</b></button>
+          </div>
+          <div class="fld"><label>类型</label><select id="fType"></select></div>
+          <div class="fld"><label>来源</label><select id="fSrc"></select></div>
+          <span class="sp"></span>
+        </div>
+        <div class="card-bd flush">
+          <div class="tbl-wrap plain"><table class="tbl fixed">
+            <colgroup>
+              <col style="width:12%"><col style="width:16%"><col style="width:10%">
+              <col style="width:16%"><col style="width:10%"><col style="width:9%"><col>
+            </colgroup>
+            <thead><tr>
+              <th>交易日</th><th>任务</th><th>状态</th>
+              <th>开始时间</th><th class="n">耗时</th><th class="n">写入</th><th>触发来源</th>
+            </tr></thead>
+            <tbody id="logRows"><tr><td colspan="7" class="empty">加载中…</td></tr></tbody>
+          </table></div>
+        </div>
+        <div class="pager" id="pager"></div>
+      </section>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"><span class="dot"></span><span id="toastMsg"></span></div>
+
+<script src="__ADMIN_BASE__/static/admin-common.js"></script>
+<script>
+/* 当前筛选状态：默认只看日常任务，历史回补（backfill*）单独折叠 */
+const F = { page: 1, page_size: 20, status: '', task_type: '', src: 'daily' };
+let meta = { page: 1, pages: 1, total: 0 };
+
+function fillSelects(){
+  q('#fType').innerHTML = TYPE_OPTIONS.map(o=>`<option value="${o.v}">${o.name}</option>`).join('');
+  q('#fSrc').innerHTML = SRC_OPTIONS.map(o=>`<option value="${o.v}" title="${esc(o.hint||'')}">${o.name}</option>`).join('');
+  q('#fType').value = F.task_type;
+  q('#fSrc').value = F.src;
+}
+
+function rowHTML(r){
+  const t = taskType(r.task_type);
+  const s = triggerSrc(r.trigger_by);
+  const err = r.error_msg ? String(r.error_msg) : '';
+  return `<tr>
+      <td class="mono">${fmtDate(r.trade_date)}</td>
+      <td><span class="tag ${t.cls}" title="${esc(t.desc)}">${esc(t.name)}</span></td>
+      <td><span class="pill ${esc(r.status||'')}">${statusText(r.status)}</span></td>
+      <td class="mono">${esc(String(r.started_at||'—').slice(5,19)||'—')}</td>
+      <td class="n mono">${logDur(r)}</td>
+      <td class="n mono">${r.rows_written==null?'—':r.rows_written}</td>
+      <td><span class="tag src ${s.cls}" title="原始记录：${esc(s.raw)}">${esc(s.name)}</span>${rawSuffix(s.raw)}</td>
+    </tr>` + (err ? `<tr class="errsub" title="点击展开/收起">
+      <td colspan="7" class="err-cell">
+        <div class="err-row">
+          <span class="err-k">失败原因</span>
+          <span class="clip">${esc(err)}</span>
+          <span class="err-toggle">展开</span>
+        </div>
+      </td>
+    </tr>` : '');
+}
+
+async function loadLogs(){
+  const tbody = q('#logRows');
+  const qs = new URLSearchParams({ page: F.page, page_size: F.page_size });
+  if(F.status) qs.set('status', F.status);
+  if(F.task_type) qs.set('task_type', F.task_type);
+  if(F.src) qs.set('src', F.src);
+  let d = null;
+  try{ d = await api('/api/logs?' + qs.toString()); }catch(e){}
+  if(!d){
+    tbody.innerHTML = '<tr><td colspan="7" class="empty">加载失败，请点「刷新」重试</td></tr>';
+    return;
+  }
+  meta = d;
+  F.page = d.page;
+  if(!d.rows.length){
+    tbody.innerHTML = `<tr><td colspan="7" class="empty">没有符合筛选条件的任务${
+      (F.task_type||F.status) ? ' · 试试切回「全部」' : ''}</td></tr>`;
+  }else{
+    tbody.innerHTML = d.rows.map(rowHTML).join('');
+  }
+  q('#rangeTxt').textContent = F.src === 'daily' ? '已排除历史回补记录' : '';
+  renderPager(q('#pager'), d, p => { F.page = p; loadLogs(); });
+}
+
+async function loadStats(){
+  const qs = new URLSearchParams();
+  if(F.src) qs.set('src', F.src);
+  if(F.task_type) qs.set('task_type', F.task_type);
+  let s = null;
+  try{ s = await api('/api/logs/stats?' + qs.toString()); }catch(e){}
+  if(!s) return;
+  // chip 上用「当前来源/类型」口径的数字，和表格的「共 N 条」保持一致
+  const f = s.filtered || s;
+  q('#cAll').textContent = f.total || 0;
+  q('#cOk').textContent = f.success || 0;
+  q('#cBad').textContent = f.failed || 0;
+  const bdg = q('#navErr');
+  if(bdg){
+    const n = (s.failed||0) + (s.running||0);
+    bdg.textContent = n; bdg.style.cssText = n ? 'background:rgba(239,68,68,.22);color:#FCA5A5' : 'display:none';
+  }
+}
+
+function refresh(){
+  loadStats(); loadLogs();
+  toast('已刷新');
+}
+
+/* ---------- 手动采集 ---------- */
+/* toISOString() 是 UTC：东八区 00:00-08:00 会算成前一天，必须用本地日期 */
+function localISO(d){
+  d = d || new Date();
+  const p = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
+}
+/* 默认交易日：不能是未来日期，周末回退到本周五（节假日由后端校验拦截） */
+function defaultTradeDate(){
+  const d = new Date();
+  while(d.getDay()===0 || d.getDay()===6) d.setDate(d.getDate()-1);
+  return localISO(d);
+}
+let pollT = null;
+async function runCollect(){
+  const date = q('#fDate').value || localISO();
+  const mode = q('#fMode').value;
+  const b=q('#runBtn'); b.disabled=true;
+  q('#taskLine').innerHTML = `<span class="pill running">执行中</span><span class="sp">正在采集 ${esc(date)} · ${mode==='intraday'?'盘中轻量':'收盘全量'}…</span>`;
+  try{
+    const r = await api('/api/collect',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({date,mode})});
+    poll(r.task_id);
+  }catch(e){
+    q('#taskLine').innerHTML = '<span class="pill failed">失败</span><span class="sp">提交失败</span>';
+    toast('提交失败','err'); b.disabled=false;
+  }
+}
+async function poll(id, n=0){
+  clearTimeout(pollT);
+  if(n >= 60){ // 1.5s × 60 ≈ 90s 超时
+    q('#taskLine').innerHTML = `<span class="pill mute">超时</span><span class="sp">任务仍在运行，请稍后刷新查看结果</span>`;
+    q('#runBtn').disabled = false;
+    toast('采集超时，请稍后刷新查看','err');
+    return;
+  }
+  let r;
+  try{ r = await api('/api/tasks/'+id); }catch(e){ q('#runBtn').disabled=false; return; }
+  if(r.status==='running'){
+    q('#taskLine').innerHTML = `<span class="pill running">执行中</span><span class="sp">开始于 ${esc(r.started||'')} · 采集 ${esc(r.date||'')}</span>`;
+    pollT = setTimeout(()=>poll(id, n+1), 1500);
+    return;
+  }
+  const ok = r.status==='success';
+  q('#taskLine').innerHTML = `<span class="pill ${ok?'success':'failed'}">${ok?'完成':'失败'}</span><span class="sp">${esc(r.msg||'')} ${esc(r.finished||'')}</span>`;
+  q('#runBtn').disabled = false;
+  toast(ok?'采集完成，已同步静态数据':'采集失败', ok?'ok':'err');
+  loadStats(); loadLogs();
+}
+
+/* ---------- 事件 ---------- */
+/* 失败任务展开/收起完整原因 */
+q('#logRows').addEventListener('click', e=>{
+  const tr = e.target.closest('tr.errsub');
+  if(!tr) return;
+  tr.classList.toggle('expanded');
+  const tg = tr.querySelector('.err-toggle');
+  if(tg) tg.textContent = tr.classList.contains('expanded') ? '收起' : '展开';
+});
+q('#stChips').addEventListener('click', e=>{
+  const c = e.target.closest('.chip'); if(!c) return;
+  F.status = c.dataset.st; F.page = 1;
+  q('#stChips').querySelectorAll('.chip').forEach(x=>x.classList.toggle('on', x===c));
+  loadLogs();
+});
+q('#fType').addEventListener('change', e=>{ F.task_type = e.target.value; F.page = 1; loadStats(); loadLogs(); });
+q('#fSrc').addEventListener('change', e=>{ F.src = e.target.value; F.page = 1; loadStats(); loadLogs(); });
+
+/* ---------- 启动 ---------- */
+fillSelects();
+q('#fDate').value = defaultTradeDate();
+q('#fDate').max = localISO();  // 日历表可能覆盖到未来，输入上限只到今天
+/* 若库内已有更近的交易日快照（且不晚于今天），优先用它 */
+api('/api/system').then(s=>{
+  const d = s && s.calendar && s.calendar.last_trade_date;
+  const cap = d ? String(d).slice(0,10) : '';
+  const today = localISO();
+  if(cap && cap <= today) q('#fDate').value = cap;
+}).catch(()=>{});
+tickClock(); setInterval(tickClock, 1000);
+loadMe();
+loadStats();
+loadLogs();
+</script>
+</body>
+</html>

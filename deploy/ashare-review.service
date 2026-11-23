@@ -1,0 +1,30 @@
+[Unit]
+Description=A-Share Review Service (board + admin + scheduler)
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=www-data
+UMask=0077
+WorkingDirectory=/opt/fupan_3x1
+# 所有密钥只从 0600 属主为 www-data 的 secrets.env 读取；不要在单元里内联密码。
+EnvironmentFile=/opt/fupan_3x1/data/secrets.env
+# 安全开关固定开启：弱口令拒绝启动、HTTPS Cookie、只信反代覆盖后的 XFF。
+Environment="SECURE_MODE=1"
+Environment="SECURE_COOKIE=1"
+Environment="TRUST_XFF=1"
+Environment="DB_DRIVER=mysql"
+Environment="ENABLE_SCHEDULER=1"
+Environment="FULL_COLLECT_TIME=15:30"
+Environment="INTRADAY_POLL_MINUTES=1"
+Environment="CALENDAR_REFRESH_TIME=02:00"
+# 只监听本机，由 Nginx 对外提供 HTTPS；云服务器安全组仅放行 80/443。
+ExecStart=/opt/fupan_3x1/.venv/bin/uvicorn backend.admin.app:app --host 127.0.0.1 --port 8000 --workers 1
+Restart=on-failure
+RestartSec=10
+StandardOutput=append:/var/log/fupan-3x1/server.log
+StandardError=append:/var/log/fupan-3x1/server.log
+
+[Install]
+WantedBy=multi-user.target

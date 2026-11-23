@@ -1,0 +1,50 @@
+# 项目数据 / 缓存 / 数据库（只忽略仓库根的 data/，web/data 的 30 日种子需要入库）
+/data/*
+!/data/.env.example
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# 密钥与环境变量（真实值只在本地 secrets.env，模板 .env.example 可提交）
+.env
+**/secrets.env
+!data/.gitkeep
+
+# 运行日志
+logs/
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# 编辑器 / 系统
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# 无头截图 / 临时预览
+/data/_shots/
+_shots/
+node_modules/
+
+# AI 协作工具的本地记忆/任务元数据（含服务器地址、排查过程等运维细节，不进代码库）
+.workbuddy/
+
+# 部署备份与证书
+backups/
+*.sql.gz
+*.pem
+*.key
+.htpasswd
+
+# 部署压缩包：可能内含 data/secrets.env 的真实密钥（管理口令、API Key 等），
+# 绝不能进版本库——即使仓库是私有的，也会随协作者/转公开泄露
+*.zip
+*.tar.gz
+*.tgz

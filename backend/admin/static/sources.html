@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>数据源健康 · 复盘运营台</title>
+<link rel="stylesheet" href="__ADMIN_BASE__/static/admin.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232563EB'/%3E%3Cpath d='M7 21l5-6 4 3 4-6 5 4' fill='none' stroke='%23fff' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+</head>
+<body data-base="__ADMIN_BASE__">
+<div class="shell">
+  <aside class="side">
+    <div class="brand">
+      <span class="mk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-6 4 3 5-7 4 4"/><path d="M3 21h18"/></svg></span>
+      <span class="tt"><b>复盘运营台</b></span>
+    </div>
+    <nav class="nav">
+      <div class="grp">监控</div>
+      <a href="__ADMIN_BASE__/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>运营概览</a>
+      <a href="__ADMIN_BASE__/tasks"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1.2"/><circle cx="3.5" cy="12" r="1.2"/><circle cx="3.5" cy="18" r="1.2"/></svg>采集任务</a>
+      <a class="on" href="__ADMIN_BASE__/sources"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5.5" rx="8" ry="3"/><path d="M4 5.5v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/><path d="M4 11.5v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>数据源</a>
+      <a href="__ADMIN_BASE__/logs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 16.5v.5"/><path d="M10.3 3.9L2.6 17.1A2 2 0 004.3 20h15.4a2 2 0 001.7-2.9L13.7 3.9a2 2 0 00-3.4 0z"/></svg>运行日志</a>
+      <div class="grp">系统</div>
+      <a href="__ADMIN_BASE__/system"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.6 1.6 0 00-2.7 1.1V21a2 2 0 11-4 0v-.1A1.6 1.6 0 006.6 19.4l-.1.1a2 2 0 11-2.8-2.8l.1-.1A1.6 1.6 0 003 15H3a2 2 0 110-4h.1a1.6 1.6 0 001.1-2.7l-.1-.1a2 2 0 112.8-2.8l.1.1A1.6 1.6 0 009 3.6V3a2 2 0 114 0v.1a1.6 1.6 0 002.7 1.1l.1-.1a2 2 0 112.8 2.8l-.1.1a1.6 1.6 0 001.1 2.7H21a2 2 0 110 4h-.1a1.6 1.6 0 00-1.5 1z"/></svg>调度与日历</a>
+    </nav>
+    <div class="side-foot">
+      <div class="acct">
+        <span class="av" id="userAv">—</span>
+        <span class="acct-tx"><b id="userName">—</b><small>运营账号</small></span>
+        <span class="on" title="服务在线"><i></i>在线</span>
+      </div>
+      <div class="foot-links">
+        <a href="/" target="_blank"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9"/><path d="M19 14v5a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1h5"/></svg>打开前台看板<svg class="ext" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M8 7h9v9"/></svg></a>
+        <a href="__ADMIN_BASE__/logout" data-logout><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 17l5-5-5-5M21 12H9"/><path d="M12 3H5a1 1 0 00-1 1v16a1 1 0 001 1h7"/></svg>退出登录</a>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="top">
+      <h1>数据源健康</h1>
+      <span class="sub">主源 · 兜底 · 本地缓存</span>
+      <span class="sp"></span>
+      <span class="clock" id="updChip">尚未加载</span>
+      <button class="btn" id="refreshBtn" onclick="load(true)">刷新状态</button>
+      <button class="btn pri" id="deepBtn" onclick="load(true,true)">深度探测</button>
+    </header>
+
+    <div class="wrap">
+      <section class="kpis" id="ov">
+        <div class="kpi"><div class="skel" style="width:70%"></div></div>
+        <div class="kpi"><div class="skel" style="width:50%"></div></div>
+        <div class="kpi"><div class="skel" style="width:60%"></div></div>
+        <div class="kpi"><div class="skel" style="width:45%"></div></div>
+      </section>
+
+      <section class="card">
+        <div class="card-hd"><h2>在线数据源</h2><span class="hint" id="onlineHint">探测中…</span></div>
+        <div class="card-bd"><div class="s-grid" id="srcCards"></div></div>
+      </section>
+
+      <section class="card">
+        <div class="card-hd"><h2>本地数据源</h2><span class="hint">库与缓存的真实统计，不依赖网络</span></div>
+        <div class="card-bd"><div class="loc-grid" id="locCards"></div></div>
+      </section>
+
+      <section class="card">
+        <div class="card-hd"><h2>自动化任务</h2><span class="hint" id="schedHint"></span></div>
+        <div class="card-bd flush"><div class="tbl-wrap"><table class="tbl">
+          <thead><tr><th>任务</th><th>触发规则</th><th>下次运行</th><th>状态</th></tr></thead>
+          <tbody id="jobs"><tr><td colspan="4" class="empty">加载中…</td></tr></tbody>
+        </table></div></div>
+      </section>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"><span class="dot"></span><span id="toastMsg"></span></div>
+
+<script src="__ADMIN_BASE__/static/admin-common.js"></script>
+<script>
+const BASE='__ADMIN_BASE__';
+const q=s=>document.querySelector(s);
+function toast(msg,type='ok'){
+  const t=q('#toast'); q('#toastMsg').textContent=msg;
+  t.className='toast show '+(type==='err'?'err':'');
+  clearTimeout(t._t); t._t=setTimeout(()=>t.className='toast',2600);
+}
+loadMe();
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ROLE={primary:['primary','主源'],backup:['backup','备用']};
+const ST={online:'正常',offline:'异常',ondemand:'按需',unknown:'未知'};
+
+function renderOverview(ov){
+  q('#ov').innerHTML=`
+    <div class="kpi accent">
+      <div class="lb">当前主源</div>
+      <div class="vl name">${esc(ov.primary_name||'—')}</div>
+      <div class="mt">涨停族 + 市场广度优先走这里</div>
+    </div>
+    <div class="kpi ok">
+      <div class="lb">在线数据源</div>
+      <div class="vl">${ov.online||0}<small>/ ${ov.total||0}</small></div>
+      <div class="mt">${ov.avg_latency_ms?('平均延迟 <b>'+ov.avg_latency_ms+' ms</b>'):'暂无延迟数据'}</div>
+    </div>
+    <div class="kpi">
+      <div class="lb">覆盖标的</div>
+      <div class="vl">${ov.covered?Number(ov.covered).toLocaleString():'—'}</div>
+      <div class="mt">名称 → 代码映射表</div>
+    </div>
+    <div class="kpi">
+      <div class="lb">最近探测</div>
+      <div class="vl time">${ov.last_checked?esc(String(ov.last_checked).slice(11,19)):'—'}</div>
+      <div class="mt">${ov.last_checked?esc(String(ov.last_checked).slice(0,10)):'点击「深度探测」'}</div>
+    </div>`;
+}
+
+function renderSources(list){
+  const online=list.filter(s=>s.status==='online').length;
+  const idle=list.filter(s=>s.status==='ondemand').length;
+  q('#onlineHint').textContent=`在线 ${online} · 按需 ${idle} · 共 ${list.length} 个`;
+  q('#srcCards').innerHTML=list.map(s=>{
+    const [rc,rt]=ROLE[s.role]||['backup','备用'];
+    const cls = s.status==='online'?'online':s.status==='ondemand'?'ondemand':(s.status==='offline'?'offline':'');
+    const caps=(s.capabilities||[]).map(c=>`<span class="cap ${c.level}" title="${esc(c.detail||c.name)}">${esc(c.name)}</span>`).join('');
+    const gaps=(s.gaps||[]).map(g=>`<span class="cap gap" title="该数据源不具备此能力">${esc(g)}</span>`).join('');
+    return `<div class="s-card ${s.role==='primary'?'pri':''}">
+      <div class="s-hd">
+        <span class="dot ${cls}"></span>
+        <b>${esc(s.name)}</b>
+        <span class="role ${rc}">${rt}</span>
+        <span class="s-lat">${s.latency_ms!=null?s.latency_ms+' ms':'<em>未探测</em>'}</span>
+      </div>
+      <div class="s-host" title="${esc(s.host)}">${esc(s.host)}</div>
+      <div class="s-desc">${esc(s.desc)}</div>
+      <div class="caps">${caps}${gaps}</div>
+      <div class="s-ft">
+        <span>${(s.capabilities||[]).length} 项能力</span><span class="sep">|</span>
+        <span>${ST[s.status]||s.status||'未知'}</span>
+        ${s.error?`<span class="sep">|</span><span class="err" title="${esc(s.error)}">${esc(String(s.error).slice(0,46))}</span>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderLocals(list){
+  q('#locCards').innerHTML=list.map(l=>`
+    <div class="loc">
+      <div class="loc-hd">
+        <b>${esc(l.name)}</b>
+        <span class="mode ${l.mode==='读写'?'rw':''}">${esc(l.mode)}</span>
+        <span style="flex:1"></span>
+        <span style="font-size:11px;color:var(--ink-3)">${esc(l.engine)}</span>
+      </div>
+      <div class="lpath" title="${esc(l.path)}">${esc(l.path)}</div>
+      <div class="metrics">${(l.metrics||[]).map(m=>`<div><label>${esc(m.k)}</label><b>${esc(m.v)}</b></div>`).join('')}</div>
+      <div class="lnote">${esc(l.note)}</div>
+    </div>`).join('');
+}
+
+function renderJobs(sys){
+  const jobs=sys.jobs||[];
+  q('#schedHint').textContent=sys.scheduler_running?'调度器运行中':'调度器未运行';
+  const rules={full:'每交易日收盘后',intraday:'盘中轮询',calendar:'每日检查'};
+  q('#jobs').innerHTML=jobs.length?jobs.map(j=>{
+    const name={full:'收盘全量采集',intraday:'盘中轻量刷新',calendar:'交易日历刷新'}[j.id]||j.id;
+    return `<tr><td>${esc(name)}</td><td>${esc(rules[j.id]||'—')}</td>
+      <td class="mono">${esc(j.next_run||'—')}</td>
+      <td><span class="pill ${sys.scheduler_running?'ok':'mute'}">${sys.scheduler_running?'已启用':'未启用'}</span></td></tr>`;
+  }).join(''):'<tr><td colspan="4" class="empty">调度器未启动（ENABLE_SCHEDULER=0）</td></tr>';
+}
+
+async function load(live, deep){
+  const btn=deep?q('#deepBtn'):q('#refreshBtn');
+  const old=btn.innerHTML;
+  btn.disabled=true; btn.textContent=deep?'探测中…':'刷新中…';
+  try{
+    const r=await fetch(`${BASE}/api/sources?deep=${deep?1:0}&live=${live?1:0}`,{credentials:'include'});
+    if(r.status===401){ location.href=BASE+'/login'; return; }
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const d=await r.json();
+    renderOverview(d.overview);
+    renderSources(d.sources);
+    renderLocals(d.locals);
+    q('#updChip').innerHTML='更新于 <b style="color:var(--ink-2)">'+new Date().toLocaleTimeString('zh-CN')+'</b>';
+    if(live) toast(deep?'深度探测完成':'状态已刷新');
+  }catch(e){
+    toast('加载失败：'+e.message,'err');
+    q('#updChip').textContent='加载失败';
+  }finally{
+    btn.disabled=false; btn.innerHTML=old;
+  }
+}
+async function loadSystem(){
+  try{
+    const r=await fetch(`${BASE}/api/system`,{credentials:'include'});
+    if(r.ok){ renderJobs(await r.json()); return; }
+  }catch(e){}
+  q('#schedHint').textContent='调度状态加载失败';
+  q('#jobs').innerHTML='<tr><td colspan="4" class="empty">调度状态加载失败，请刷新页面重试</td></tr>';
+}
+load(false); loadSystem();
+// 页面开着时只轮询库里的健康记录，不再打上游
+setInterval(()=>load(false),90000);
+</script>
+</body>
+</html>

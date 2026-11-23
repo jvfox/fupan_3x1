@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>运营概览 · A股复盘运营台</title>
+<link rel="stylesheet" href="__ADMIN_BASE__/static/admin.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232563EB'/%3E%3Cpath d='M7 21l5-6 4 3 4-6 5 4' fill='none' stroke='%23fff' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+</head>
+<body data-base="__ADMIN_BASE__">
+<div class="shell">
+  <!-- 侧栏（各独立页共用结构，激活项由服务端页面写死） -->
+  <aside class="side">
+    <div class="brand">
+      <span class="mk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-6 4 3 5-7 4 4"/><path d="M3 21h18"/></svg></span>
+      <span class="tt"><b>复盘运营台</b></span>
+    </div>
+    <nav class="nav">
+      <div class="grp">监控</div>
+      <a href="__ADMIN_BASE__/" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>运营概览</a>
+      <a href="__ADMIN_BASE__/tasks"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1.2"/><circle cx="3.5" cy="12" r="1.2"/><circle cx="3.5" cy="18" r="1.2"/></svg>采集任务</a>
+      <a href="__ADMIN_BASE__/sources"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5.5" rx="8" ry="3"/><path d="M4 5.5v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/><path d="M4 11.5v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>数据源</a>
+      <a href="__ADMIN_BASE__/logs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 16.5v.5"/><path d="M10.3 3.9L2.6 17.1A2 2 0 004.3 20h15.4a2 2 0 001.7-2.9L13.7 3.9a2 2 0 00-3.4 0z"/></svg>运行日志</a>
+      <div class="grp">系统</div>
+      <a href="__ADMIN_BASE__/system"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.6 1.6 0 00-2.7 1.1V21a2 2 0 11-4 0v-.1A1.6 1.6 0 006.6 19.4l-.1.1a2 2 0 11-2.8-2.8l.1-.1A1.6 1.6 0 003 15H3a2 2 0 110-4h.1a1.6 1.6 0 001.1-2.7l-.1-.1a2 2 0 112.8-2.8l.1.1A1.6 1.6 0 009 3.6V3a2 2 0 114 0v.1a1.6 1.6 0 002.7 1.1l.1-.1a2 2 0 112.8 2.8l-.1.1a1.6 1.6 0 001.1 2.7H21a2 2 0 110 4h-.1a1.6 1.6 0 00-1.5 1z"/></svg>调度与日历</a>
+    </nav>
+    <div class="side-foot">
+      <div class="acct">
+        <span class="av" id="userAv">—</span>
+        <span class="acct-tx"><b id="userName">—</b><small>运营账号</small></span>
+        <span class="on" title="服务在线"><i></i>在线</span>
+      </div>
+      <div class="foot-links">
+        <a href="/" target="_blank"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9"/><path d="M19 14v5a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1h5"/></svg>打开前台看板<svg class="ext" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M8 7h9v9"/></svg></a>
+        <a href="__ADMIN_BASE__/logout" data-logout><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 17l5-5-5-5M21 12H9"/><path d="M12 3H5a1 1 0 00-1 1v16a1 1 0 001 1h7"/></svg>退出登录</a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- 主体 -->
+  <div class="main">
+    <header class="top">
+      <h1>运营概览</h1>
+      <span class="sub">采集 · 数据源 · 调度</span>
+      <span class="sp"></span>
+      <span class="clock" id="clock">—</span>
+      <button class="btn" onclick="refreshAll(true)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 11-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>刷新</button>
+    </header>
+
+    <div class="wrap">
+      <!-- KPI -->
+      <section class="kpis" id="kpis"></section>
+
+      <!-- 运行状态 -->
+      <section class="ribbon" id="ribbon"></section>
+
+      <!-- 数据源健康 -->
+      <section class="card" id="sources">
+        <div class="card-hd">
+          <h2>数据源健康</h2><span class="hint">最近一次探测结果</span>
+          <span class="sp"></span>
+          <button class="btn sm" id="hcBtn" onclick="checkHealth()">立即探测</button>
+          <a class="btn sm ghost" href="__ADMIN_BASE__/sources">全部数据源</a>
+        </div>
+        <div class="card-bd"><div class="src-list" id="srcList"></div></div>
+      </section>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"><span class="dot"></span><span id="toastMsg"></span></div>
+
+<script src="__ADMIN_BASE__/static/admin-common.js"></script>
+<script>
+/* ---------- KPI ---------- */
+const ICO = {
+  days:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
+  ok:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>',
+  err:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4.5M12 16h.01"/></svg>',
+  db:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5.5" rx="8" ry="3"/><path d="M4 5.5v12c0 1.7 3.6 3 8 3s8-1.3 8-3v-12"/></svg>',
+  cpu:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="7" width="10" height="10" rx="1.6"/><path d="M10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4"/></svg>',
+  cal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
+  pulse:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h4l3-8 4 16 3-8h6"/></svg>',
+  loop:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 11-2.6-6.4"/><path d="M21 3v6h-6"/></svg>'
+};
+async function loadStats(){
+  const s = await api('/api/stats');
+  const total = (s.success_tasks||0)+(s.failed_tasks||0);
+  const rate = total ? (s.success_tasks/total*100) : 100;
+  q('#kpis').innerHTML = `
+    <div class="kpi accent">
+      <div class="lb">${ICO.db}已采集交易日</div>
+      <div class="vl">${s.total_days||0}<small>天</small></div>
+      <div class="mt">本地快照表 <b>daily_snapshot</b></div>
+    </div>
+    <div class="kpi">
+      <div class="lb">${ICO.days}最新全量日期</div>
+      <div class="vl text">${s.latest_full_date? fmtDate(s.latest_full_date).slice(5) : '—'}</div>
+      <div class="mt">${s.latest_full_date? '收盘全量已落库 · '+fmtDate(s.latest_full_date) : '暂无全量数据'}</div>
+    </div>
+    <div class="kpi ok">
+      <div class="lb">${ICO.ok}成功任务</div>
+      <div class="vl">${s.success_tasks||0}<small>次</small></div>
+      <div class="mt">成功率 <b>${rate.toFixed(1)}%</b></div>
+    </div>
+    <div class="kpi ${s.failed_tasks?'err':''}">
+      <div class="lb">${ICO.err}失败任务</div>
+      <div class="vl">${s.failed_tasks||0}<small>次</small></div>
+      <div class="mt">${s.failed_tasks? '详情见「运行日志」（运营者可见）' : '近 30 天无失败'}</div>
+    </div>`;
+}
+
+/* ---------- 运行状态（ribbon） ---------- */
+async function loadSystem(){
+  let s = null;
+  try{ s = await api('/api/system'); }catch(e){}
+  if(!s){
+    q('#ribbon').innerHTML = '<div class="rib"><span class="ic err">'+ICO.err+'</span><span class="tx"><span class="k">运行状态</span><span class="v">加载失败<small>请点击右上角「刷新」重试</small></span></span></div>';
+    return;
+  }
+  const cal = s.calendar || {};
+  const running = !!s.scheduler_running;
+  const nextRuns = (s.jobs||[]).map(j=>String(j.next_run||'')).filter(Boolean).sort();
+  const next = nextRuns.length ? nextRuns[0].slice(5,16) : '—';
+  const stale = cal.stale;
+  q('#ribbon').innerHTML = `
+    <div class="rib">
+      <span class="ic ${running?'ok':'err'}">${ICO.cpu}</span>
+      <span class="tx"><span class="k">定时调度器</span><span class="v">${running?'运行中':'未运行'}<small>${running? '下次 '+next : '检查 ENABLE_SCHEDULER'}</small></span></span>
+    </div>
+    <div class="rib">
+      <span class="ic">${ICO.pulse}</span>
+      <span class="tx"><span class="k">收盘全量采集</span><span class="v">每交易日 ${s.full_collect_time||'15:30'}<small>全量字段写入</small></span></span>
+    </div>
+    <div class="rib">
+      <span class="ic">${ICO.loop}</span>
+      <span class="tx"><span class="k">盘中轻量轮询</span><span class="v">每 ${s.intraday_minutes||5} 分钟<small>交易时段增量刷新</small></span></span>
+    </div>
+    <div class="rib">
+      <span class="ic ${stale?'warn':'ok'}">${ICO.cal}</span>
+      <span class="tx"><span class="k">交易日历</span><span class="v">${stale?'需要刷新':'有效'}<small>覆盖至 ${cal.last_trade_date||'—'}</small></span></span>
+    </div>`;
+}
+
+/* ---------- 数据源健康 ---------- */
+async function loadHealth(){
+  let rows = null;
+  try{ rows = await api('/api/health'); }catch(e){}
+  if(rows === null){
+    q('#srcList').innerHTML = '<div class="empty" style="grid-column:1/-1">数据源状态加载失败，点击右上角「刷新」重试</div>';
+    return;
+  }
+  const latest = {};
+  rows.forEach(r=>{ if(!latest[r.source_name]) latest[r.source_name]=r; });
+  const list = Object.values(latest);
+  const box = q('#srcList');
+  if(!list.length){
+    box.innerHTML = '<div class="empty" style="grid-column:1/-1">尚未探测，点击右上角「立即探测」</div>';
+    return;
+  }
+  box.innerHTML = list.map(r=>{
+    const ok = r.status==='ok';
+    const ms = r.latency_ms==null? 0 : Number(r.latency_ms);
+    const pct = Math.max(3, Math.min(100, ms/1500*100));
+    const lv = ms<400? '' : ms<900? 'mid' : 'slow';
+    return `<div class="src">
+      <div class="r1">
+        <span class="nm" title="${esc(r.source_name)}">${esc(r.source_name)}</span>
+        <span style="flex:1"></span>
+        <span class="pill ${ok?'ok':'fail'}">${ok?'正常':'异常'}</span>
+      </div>
+      <div class="r2">
+        <span class="mono" style="min-width:52px;font-weight:600;color:var(--ink-2)">${ms? ms+' ms':'—'}</span>
+        <span class="lat ${lv}"><i style="width:${pct}%"></i></span>
+        <span style="white-space:nowrap">${rel(r.checked_at)}</span>
+      </div>
+      ${r.error_msg? `<div style="margin-top:7px;font-size:11px;color:var(--err);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${esc(r.error_msg)}">${esc(r.error_msg)}</div>`:''}
+    </div>`;
+  }).join('');
+}
+async function checkHealth(){
+  const b=q('#hcBtn'); b.disabled=true; b.textContent='探测中…';
+  try{ await api('/api/health/check',{method:'POST'}); await loadHealth(); toast('数据源探测完成'); }
+  catch(e){ toast('探测失败','err'); }
+  finally{ b.disabled=false; b.textContent='立即探测'; }
+}
+
+function refreshAll(manual){
+  loadStats(); loadHealth(); loadSystem();
+  if(manual) toast('已刷新');
+}
+
+/* ---------- 启动 ---------- */
+tickClock(); setInterval(tickClock, 1000);
+loadMe();
+refreshAll();
+setInterval(loadStats, 30000);
+setInterval(loadSystem, 60000);
+</script>
+</body>
+</html>

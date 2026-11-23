@@ -1,0 +1,3809 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#F4F6FA">
+<meta name="description" content="A股每日复盘看板：涨停晋级、连板天梯、概念热度与市场情绪，近 15 个交易日">
+<title>A股复盘 · 每日数据终端</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232563EB'/%3E%3Cpath d='M7 21l5-6 4 3 4-6 5 4' fill='none' stroke='%23fff' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<!-- 预载拉丁子集：29KB、同源、命中缓存后不再请求；不加 preload 首帧会用系统字体闪一下。
+     中文子集只在桌面端用，所以 preload 加 media 限定：手机端既不预载也不下载。 -->
+<link rel="preload" href="vendor/fonts/inter-subset.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="vendor/fonts/notosc-1.woff2" as="font" type="font/woff2" crossorigin media="(min-width:720px)">
+<style>
+/* 变量字体（Inter，SIL OFL），子集化到 ASCII + 常用符号，29KB 覆盖 400-800 五个字重。
+   只声明 unicode-range 到拉丁/符号：中文不匹配 → 浏览器根本不会下载该字体，
+   直接落到系统黑体。这样数字和字母是统一的高品质字形，中文又不花一分钱带宽。
+   注：桌面端中文额外用下面的 Noto Sans SC 子集（跨屏列宽一致），手机端刻意不用，见 --ff 的注释。 */
+@font-face{
+  font-family:'Inter';
+  src:url('vendor/fonts/inter-subset.woff2') format('woff2');
+  font-weight:400 800;
+  font-style:normal;
+  font-display:swap;
+  unicode-range:U+0000-00FF,U+00B7,U+00D7,U+2010-2015,U+2018-201D,U+2022,U+2026,U+2039-203A,U+2044,U+20AC,U+2103,U+2116,U+2190-2193,U+2212,U+2215,U+25A0-25FF;
+}
+
+/* 中文：思源黑体 Noto Sans SC（SIL OFL 1.1，可商用），同样只带页面实际用到的字。
+   用 Google Fonts 的 text= 接口按字符出子集，再按 unicode-range 切成 3 片：
+   浏览器只下载"页面里真的有这些字"的切片，三片合计 382KB（400-700 全部字重，一个变量文件）。
+   比整包思源黑体（10MB+）小两个数量级，也不依赖任何 CDN。
+   代价：数据里将来出现生僻字（不在当前 1311 字里）会回落到系统黑体，
+   需要时重跑 tools/build_fonts.py 重新出子集即可。 */
+@font-face{
+  font-family:'Noto Sans SC';
+  src:url('vendor/fonts/notosc-1.woff2') format('woff2');
+  font-weight:400 700;
+  font-style:normal;
+  font-display:swap;
+  unicode-range:U+B7, U+2014, U+2018-2019, U+201C-201D, U+2026, U+3001-3002, U+3008-300B, U+3010-3011, U+4E00-4E01, U+4E03, U+4E07, U+4E09-4E0B, U+4E0D-4E0E, U+4E14, U+4E16, U+4E19-4E1A, U+4E1C-4E1D, U+4E22, U+4E24, U+4E2A, U+4E2D, U+4E30, U+4E38-4E3B, U+4E3D, U+4E45, U+4E48-4E49, U+4E4B, U+4E50, U+4E5D, U+4E5F, U+4E66, U+4E71, U+4E73, U+4E86, U+4E89, U+4E8B-4E8C, U+4E8E-4E8F, U+4E91-4E92, U+4E94-4E95, U+4E9A, U+4EA2, U+4EA4, U+4EA7, U+4EAC, U+4EAE, U+4EBA, U+4EBF, U+4EC5, U+4ECA, U+4ECD-4ECE, U+4ED4-4ED5, U+4ED8, U+4EE3, U+4EE5, U+4EEA, U+4EEC, U+4EF6-4EF7, U+4EFB, U+4EFD, U+4EFF, U+4F01, U+4F0A, U+4F0D, U+4F0F, U+4F11, U+4F17-4F18, U+4F1A, U+4F20, U+4F26, U+4F30, U+4F46, U+4F4D-4F4F, U+4F53, U+4F55, U+4F59, U+4F5C, U+4F60, U+4F73, U+4F8B, U+4F9B, U+4F9D, U+4FA5, U+4FA7-4FA8, U+4FBF, U+4FDD, U+4FE1, U+4FE9, U+4FEE, U+501F, U+503A, U+503C, U+5047, U+504F, U+505A, U+505C, U+5065, U+5076, U+50A8, U+50CF, U+5112, U+5141, U+5143, U+5146, U+5148-5149, U+514B, U+514D, U+515C, U+5165, U+5168, U+516B-516D, U+5171, U+5173-5174, U+5176-5178, U+517B, U+5185, U+518D, U+5199, U+519B-519C, U+51A0, U+51B0, U+51B3, U+51B6-51B7, U+51BB, U+51C0, U+51C6, U+51CC, U+51CF, U+51DD, U+51E0-51E1, U+51EF, U+51FA-51FB, U+5206-5207, U+5217, U+5219-521B, U+521D, U+5224, U+5229, U+522B, U+5230, U+5236, U+5238, U+523B, U+5242, U+524D, U+5251, U+5254, U+5265, U+5267, U+5269, U+529B, U+529F-52A1, U+52A8, U+52B1-52B2, U+52D2, U+52E4, U+5305, U+5316-5317, U+5339-533B, U+5343, U+5347, U+534A, U+534E-534F, U+5355, U+5357, U+535A, U+5360-5361, U+536B, U+5370, U+5374, U+5386, U+538B, U+539A, U+539F, U+53A6, U+53A8, U+53BB, U+53C2, U+53C8, U+53CA-53CD, U+53D1, U+53D6, U+53D8, U+53E0, U+53E3-53E5, U+53EA, U+53EF-53F0, U+53F3, U+53F7-53F8, U+5403-5404, U+5408-5409, U+540C-540E, U+5411, U+5426, U+542F, U+5438, U+544A, U+5468, U+547D, U+548C, U+54C1, U+54C8, U+54CD, U+552E-552F, U+5546, U+5564, U+559C, U+5609, U+5668, U+56DB, U+56DE, U+56E0, U+56E2, U+56ED, U+56F4, U+56FA, U+56FD-56FE, U+5706, U+5708, U+571F, U+5723, U+5728, U+5730, U+573A, U+5740, U+5747, U+574A, U+5750, U+5757, U+575A, U+5764, U+5769, U+578B, U+57C3, U+57CB, U+57CE, U+57DA, U+57F9-57FA, U+5851, U+585E, U+586B, U+5883, U+589E, U+58C1, U+58EB, U+58F0, U+58F3, U+5904, U+5907, U+590D, U+5916, U+591A, U+591F, U+5927, U+5929-592A, U+592E, U+5931, U+5934, U+5939, U+5947, U+594B, U+594F, U+5957, U+5965, U+5973, U+597D, U+5982, U+59CB, U+5A01, U+5A31, U+5A92, U+5B50, U+5B57-5B58, U+5B5A, U+5B63-5B64, U+5B66, U+5B81, U+5B83, U+5B87, U+5B89, U+5B8C, U+5B8F, U+5B97, U+5B99-5B9A, U+5B9C-5B9E, U+5BA4, U+5BB6, U+5BB8-5BB9, U+5BBD-5BBE, U+5BC6, U+5BCC, U+5BDF, U+5BF9, U+5BFC, U+5C01, U+5C0A, U+5C0F, U+5C11, U+5C14, U+5C1A, U+5C31, U+5C3C, U+5C40, U+5C42, U+5C45, U+5C4A, U+5C4F, U+5C55, U+5C5E, U+5C71, U+5C9B, U+5CB1, U+5CB3, U+5CB8, U+5CE1, U+5CF0, U+5DDD-5DDE, U+5DE5-5DE8, U+5DEE, U+5DF1-5DF2, U+5DF4, U+5E02-5E03, U+5E06, U+5E08, U+5E1D, U+5E26-5E27, U+5E38, U+5E3D, U+5E45, U+5E72-5E74, U+5E76, U+5E78, U+5E7F, U+5E8A, U+5E8F, U+5E93-5E95, U+5E97, U+5EA6, U+5EAD, U+5EB7, U+5EF6, U+5EFA, U+5F00, U+5F02, U+5F0F, U+5F15, U+5F18, U+5F20, U+5F31, U+5F39-5F3A, U+5F52-5F53, U+5F62, U+5F69, U+5F71, U+5F81, U+5F84-5F85;
+}
+@font-face{
+  font-family:'Noto Sans SC';
+  src:url('vendor/fonts/notosc-2.woff2') format('woff2');
+  font-weight:400 700;
+  font-style:normal;
+  font-display:swap;
+  unicode-range:U+5F88, U+5F95, U+5F97, U+5FAE, U+5FB7, U+5FBD, U+5FC3, U+5FC5-5FC6, U+5FEB, U+5FF5, U+6001, U+600E, U+601D, U+6027, U+603B, U+6052, U+6069, U+606F, U+60AC, U+60C5, U+60E0, U+60F3, U+610F, U+611F, U+6148, U+6167, U+620F-6210, U+6216, U+622A, U+6237, U+623F-6240, U+624B, U+624D-624E, U+6253, U+6258, U+6263, U+626B-626D, U+6279, U+627F-6280, U+628A, U+6295, U+6298, U+62A2, U+62A4-62A5, U+62BC, U+62C5-62C6, U+62C9, U+62D3, U+62DB, U+62DF, U+62E9, U+62FC, U+62FF, U+6301-6302, U+6307, U+6309, U+6311, U+6324, U+632F, U+633A, U+6362, U+636E, U+6377, U+6389, U+638C, U+6392, U+63A2, U+63A5, U+63A7, U+63D0, U+644A, U+6458, U+6469, U+6491-6492, U+64A4, U+652F, U+6536, U+6539, U+653E, U+6548, U+6559, U+6563, U+6570, U+6574, U+6587, U+6599, U+65AD, U+65AF-65B0, U+65B9, U+65C5, U+65CB, U+65CF, U+65E0, U+65E2, U+65E5, U+65E9, U+65F6, U+65FA, U+6602, U+6607, U+660A, U+660C, U+660E, U+6613, U+661F, U+6625, U+6628, U+662D, U+662F, U+663E, U+6643, U+664B, U+6653, U+6656, U+665F, U+6668, U+666E-666F, U+6676, U+667A, U+6682, U+6696, U+66F4, U+6700, U+6708-6709, U+670D, U+671B, U+671D, U+671F, U+6728, U+672A-672C, U+672F, U+673A, U+6743, U+6750, U+675F-6761, U+6765, U+676D, U+676F-6770, U+677E-677F, U+6781, U+6784, U+6790, U+6797, U+679C, U+67AF, U+67B6, U+67D3-67D4, U+67E5, U+67EF, U+67F1, U+6807-6808, U+680F, U+6811, U+6837-6839, U+683C, U+6842, U+6846, U+6848, U+684C, U+6863, U+6865, U+68A6, U+68AF-68B0, U+68C0, U+68C9, U+68EE, U+68F5, U+695E, U+6982, U+699C, U+6A21, U+6A2A, U+6A59, U+6B21-6B23, U+6B27, U+6B63-6B66, U+6B6A, U+6B7B, U+6B96, U+6BB5, U+6BC5, U+6BCD, U+6BCF, U+6BD4, U+6BDB, U+6C11, U+6C14, U+6C22, U+6C27, U+6C2F, U+6C34, U+6C38, U+6C42, U+6C47, U+6C49, U+6C5F-6C60, U+6C7D, U+6C83, U+6C88, U+6CA1, U+6CAA, U+6CB9, U+6CBF, U+6CC9, U+6CD5, U+6CE2, U+6CE5, U+6CE8, U+6CF0, U+6CF8, U+6CFD, U+6D01, U+6D0B, U+6D17, U+6D25, U+6D2A, U+6D3E, U+6D41, U+6D45, U+6D4B, U+6D4E-6D4F, U+6D59, U+6D66, U+6D6A, U+6D6E, U+6D77, U+6D82, U+6D88, U+6DA6, U+6DA8, U+6DAF, U+6DB2, U+6DE1, U+6DF1, U+6DF7, U+6DF9, U+6E05, U+6E24, U+6E29, U+6E2F, U+6E32, U+6E38, U+6E43, U+6E56, U+6E7E-6E7F, U+6E90, U+6EA2, U+6EAA, U+6ED1, U+6EDA, U+6EDE, U+6EE1, U+6EE6, U+6EE8, U+6F02, U+6F14, U+6F2B, U+6F6E, U+6F84, U+6FB3, U+6FC0, U+701A-701B, U+704F, U+7070, U+7075, U+7080, U+7096, U+70AC-70AD, U+70B8-70B9, U+70D8, U+70DB, U+70ED, U+70F7, U+710A, U+7119, U+7126, U+7136, U+7164, U+7167, U+718A, U+719F, U+71C3, U+7206, U+7231, U+7247-7248, U+724C, U+725B, U+7261, U+7267, U+7269, U+7272, U+7279-727A, U+72B6, U+72EC, U+72EE, U+72FC, U+731C, U+732A, U+7387, U+7389, U+738B, U+739B, U+73A9, U+73AF-73B0, U+73BB, U+73E0, U+7403, U+7406, U+745E, U+7476, U+7483, U+74E6, U+74F7, U+751F, U+7528, U+7531, U+7533, U+7535, U+7537, U+753B, U+754C, U+7559, U+7586, U+7597, U+75C5, U+7626, U+767D-767E, U+7684, U+7687, U+76AE, U+76C8, U+76CA, U+76D2, U+76D6, U+76D8, U+76DB, U+76EE, U+76F4, U+76F8, U+7701, U+770B, U+771F, U+773C, U+7740, U+77AC, U+77E9, U+77ED-77EE, U+77F3, U+77FF, U+7801, U+7814, U+781C, U+786C, U+786E, U+788D, U+78B1, U+78B3, U+78C1, U+78E8, U+78F7, U+793A, U+793E, U+795E, U+7965, U+7968, U+7981, U+798F, U+79BB, U+79C0, U+79CD, U+79D1-79D2, U+79DF, U+79F0, U+79FB, U+7A00, U+7A0B, U+7A0D-7A0E, U+7A7A, U+7A84, U+7A96-7A97, U+7ACB, U+7AD9, U+7AEF, U+7AF9, U+7B14, U+7B26, U+7B2C, U+7B49, U+7B51-7B52, U+7B56, U+7B5B, U+7B7E, U+7B94, U+7B97, U+7BA1;
+}
+@font-face{
+  font-family:'Noto Sans SC';
+  src:url('vendor/fonts/notosc-3.woff2') format('woff2');
+  font-weight:400 700;
+  font-style:normal;
+  font-display:swap;
+  unicode-range:U+7BAD, U+7BB1, U+7C73, U+7C7B, U+7C89, U+7CA4, U+7CBE, U+7CFB, U+7D20, U+7D22, U+7D27, U+7D2B, U+7EA2, U+7EA4, U+7EA6-7EA7, U+7EAA, U+7EAC, U+7EAF, U+7EB1, U+7EB3, U+7EB5, U+7EB8, U+7EBA, U+7EBD, U+7EBF, U+7EC4, U+7EC6-7EC8, U+7ECF, U+7ED1-7ED3, U+7ED8-7ED9, U+7EDC-7EDD, U+7EDF, U+7EE7, U+7EE9-7EEA, U+7EED, U+7EF4-7EF5, U+7EFC, U+7EFF, U+7F06, U+7F13, U+7F18, U+7F29, U+7F51, U+7F5A, U+7F69, U+7F6E, U+7F8A, U+7F8E, U+7F9A, U+7FA4, U+7FBD, U+7FD4, U+7FFB, U+8001, U+8005, U+800C, U+804C, U+8054, U+8058, U+805A, U+8087, U+80A1, U+80A4-80A5, U+80B2, U+80CE, U+80DC, U+80F6, U+80FA, U+80FD, U+8102, U+8109, U+8111, U+811A, U+8170, U+817E, U+818F, U+819C, U+81E3, U+81EA, U+81F3-81F4, U+81FB, U+822A, U+826F, U+8272, U+827A, U+827E, U+8282, U+8292, U+829D, U+82AF, U+82B1, U+82B3, U+82CF, U+82E5, U+82F1, U+82F9, U+8303, U+8317, U+8328, U+8346, U+8349, U+8361, U+8363, U+836F, U+83B1-83B2, U+83CC, U+83DC, U+83F1, U+8425, U+843D, U+8463, U+8499, U+84DD, U+8584, U+85B0, U+85CF, U+8679, U+86CB, U+8721, U+8782, U+878D, U+87B3, U+87E0, U+884C-884D, U+8865, U+8868, U+886C, U+88AB, U+88C1, U+88C5, U+8944, U+897F, U+8981, U+8986, U+89C1-89C2, U+89C6, U+89C8-89C9, U+89D2, U+89E3, U+89E6, U+8BA1-8BA2, U+8BA4, U+8BA9, U+8BAD-8BB0, U+8BB8, U+8BBC, U+8BBE-8BBF, U+8BC1, U+8BC9-8BCA, U+8BCD, U+8BD5, U+8BDD, U+8BE5-8BE6, U+8BED, U+8BEF, U+8BF4, U+8BF7, U+8BFA-8BFB, U+8C03, U+8C0A, U+8C31, U+8C37, U+8C61, U+8C6A, U+8D1D, U+8D21-8D22, U+8D25, U+8D27-8D28, U+8D2D, U+8D34-8D35, U+8D38-8D39, U+8D41, U+8D44, U+8D56, U+8D5A-8D5B, U+8D62, U+8D64, U+8D70, U+8D77, U+8D85, U+8D8A, U+8DB3, U+8DCC, U+8DD1, U+8DDD, U+8DDF, U+8DE8, U+8DEF, U+8DF3, U+8EAB, U+8F66, U+8F68, U+8F6C, U+8F6E-8F6F, U+8F74, U+8F7B, U+8F7D, U+8F83, U+8F88, U+8F91, U+8F93, U+8FB0, U+8FB9, U+8FBD-8FBE, U+8FC1, U+8FC5, U+8FC7, U+8FCE, U+8FD0-8FD1, U+8FD4, U+8FD8-8FD9, U+8FDB-8FDC, U+8FDE-8FDF, U+8FEA, U+8FF7, U+8FFD, U+9000-9002, U+9009, U+901A, U+901F-9020, U+9038, U+903B, U+9053, U+9065, U+906E, U+907F, U+90A3, U+90A6, U+90AE, U+90B5, U+90D1, U+90E8, U+90FD, U+914D, U+9152, U+9170, U+9178, U+918B, U+91C7, U+91CC-91CF, U+91D1, U+946B, U+9488-9489, U+949B, U+94A0, U+94A2, U+94A7-94A8, U+94AE, U+94B1, U+94BB, U+94BD, U+94C1-94C2, U+94DC-94DD, U+94DF, U+94F5-94F6, U+94FA, U+94FE, U+9500-9502, U+950B-950C, U+9510, U+9517, U+9519, U+9521, U+9526, U+952E, U+9530, U+953B, U+954D, U+955C, U+957F, U+95E8, U+95EA, U+95ED-95EE, U+95F2, U+95F4, U+95FD, U+9600, U+9605, U+961F, U+9633-9636, U+963B, U+963F, U+9644-9645, U+9647, U+964D, U+9650, U+9655, U+9662, U+9664, U+9669, U+9675-9676, U+9686, U+968F-9690, U+9694, U+969C, U+96C5-96C6, U+96EA, U+96F6, U+9700, U+9707, U+9738, U+9752, U+9759, U+9760, U+9762, U+9769, U+9776, U+97F3, U+9875-9876, U+9879-987B, U+987F, U+9884, U+9886, U+9891, U+9896, U+9898, U+989C-989D, U+98CE, U+98D8, U+98DE-98DF, U+9970-9972, U+9988, U+9996, U+9999, U+9A6C, U+9A71, U+9A76, U+9A7B, U+9A7E, U+9AA8, U+9ABC, U+9AD8, U+9B42, U+9C81, U+9E1F, U+9E23, U+9E3F, U+9E45, U+9E4F, U+9E92, U+9E9F, U+9EA6, U+9EBB, U+9EC4, U+9ECE, U+9ED1, U+9ED8, U+9EDB, U+9F0E, U+9F13, U+9F50, U+9F7F, U+9F99, U+FF01, U+FF03, U+FF05-FF06, U+FF08-FF0D, U+FF0F, U+FF1A-FF1B, U+FF1F-FF20;
+}
+:root{
+  --bg:#F4F6FA;
+  --card:#FFFFFF;
+  --card-2:#FAFBFD;
+  --bd:#E3E8EF;
+  --bd2:#CBD5E1;
+  --tx:#0B1220;
+  --tx2:#41506B;
+  --tx3:#55637A;
+  --tx4:#64748B;
+  --ac:#2563EB;
+  --ac-s:#EFF5FF;
+  /* 选中态用品牌蓝，与 A股涨跌红/绿彻底分离：红色只表示上涨，不再兼职选中 */
+  --sel:#2563EB;
+  --sel-s:#EFF5FF;
+  --sel-bd:#BFDBFE;
+  /* 强调红仅保留给标题竖条，且已降饱和；选中态不再占用它 */
+  --hl:#DC2626;
+  --hl-s:#FEF4F4;
+  --hl-bd:#F3CBCB;
+  --up:#DC2626;
+  --dn:#047857;
+  --warn:#B45309;
+  --m-hot:#B91C1C;
+  --m-warm:#C2410C;
+  --m-mid:#475569;
+  --m-cool:#0F766E;
+  --m-cold:#134E4A;
+  --line:#EDF1F6;
+  --sh-1:0 1px 2px rgba(13,21,38,.05);
+  --sh-2:0 1px 2px rgba(13,21,38,.04),0 2px 8px -2px rgba(13,21,38,.07);
+  --sh-3:0 8px 28px -10px rgba(13,21,38,.22),0 2px 6px -2px rgba(13,21,38,.08);
+  --shadow:var(--sh-2);
+  --shadow-sm:var(--sh-1);
+  --sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-5:20px;--sp-6:24px;
+  --z-boot:900;--z-toast:800;--z-modal:700;--z-drawer:600;--z-pop:500;--z-sticky:100;--z-hint:8;
+  --r-lg:12px;
+  --r-md:9px;
+  --r-sm:7px;
+  --ease:cubic-bezier(.2,.6,.3,1);
+  /* 字体栈：Inter 接管拉丁与数字，思源黑体接管中文（本地子集，见上方 @font-face），
+     两者都带 unicode-range，互不越界；族里再往后是各平台自带黑体，只用来兜子集外的生僻字。
+     之所以不再让"每个平台用自己的黑体"：苹方 / 雅黑 / 鸿蒙三套字面宽度和重心都不一样，
+     同一张表在不同机器上列宽会跳，跨屏对比数据时反而碍事。 */
+  --ff:'Inter','Noto Sans SC','PingFang SC','HarmonyOS Sans SC','MiSans','Microsoft YaHei UI','Microsoft YaHei','Segoe UI Variable Text','Segoe UI',system-ui,-apple-system,'Hiragino Sans GB','Source Han Sans SC','Heiti SC',sans-serif;
+  --fm:'Inter','SF Mono','JetBrains Mono',ui-monospace,'Menlo','Consolas',monospace;
+  /* 字号阶梯：只用这几档，避免 9/9.5/10/10.5/11/11.5 这种半像素乱炖 */
+  --t1:12px;     /* 微：单位、序号、脚注、图例 */
+  --t2:12.5px;   /* 次：卡片标签、小字说明 */
+  --t3:12.5px;   /* 正文小字 */
+  --t4:13px;     /* 列表/表格主值 */
+  --t5:15px;     /* 强调值 */
+  --t6:18px;     /* 日期 */
+  /* 字重阶梯：全页只用这四档，别再随手写 700/800。
+     改版前 700 用了 50 处、800 用了 15 处，数字、中文标签、数量徽标一样黑，
+     层级只能靠颜色硬撑，整页看着"发胖"；中文尤其明显——方块字本来就满格 1em，
+     再叠 -.02~-.05em 的负字距，字肩会挤在一起。
+     --w-hero 只给 ≥16px 的"英雄数字"（成交额、情绪分、日期），--w-data 给数据主值，
+     --w-mid 给灰字徽标/排名，--w-label 给标签与按钮。想整体再轻/再重只改这四行。 */
+  --w-hero:600;
+  --w-data:600;
+  --w-mid:500;
+  --w-label:500;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;color-scheme:light}
+body{background:var(--bg);color:var(--tx);font-family:var(--ff);font-size:14px;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;font-kerning:normal;text-rendering:optimizeLegibility;line-height:1.5;min-height:100vh}
+/* 手机端不下载中文 webfont（382KB，占首屏 63%）：中文交给系统黑体，数字仍是 Inter。
+   手机系统自带黑体（苹方 / 鸿蒙 Sans / MiSans）本就是为小屏调过的，且零延迟随系统渲染；
+   而中文子集在 4G 下要多等 300~600ms，还会因 font-display:swap 先闪一次系统字。
+   桌面端保留内嵌子集，是为了跨屏表格列宽一致（那才是真正需要"所有机器一张脸"的场景）。
+   想改回去：删掉下面这条规则即可。 */
+@media(max-width:719px){
+  html:not(.pc-view){
+    --ff:'Inter','PingFang SC','HarmonyOS Sans SC','MiSans','Microsoft YaHei UI','Microsoft YaHei','Segoe UI Variable Text','Segoe UI',system-ui,-apple-system,'Hiragino Sans GB','Source Han Sans SC','Heiti SC',sans-serif;
+  }
+}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:9px;border:2px solid transparent;background-clip:padding-box}
+::-webkit-scrollbar-thumb:hover{background:#94A3B8;background-clip:padding-box}
+.boot{position:fixed;inset:0;z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:var(--bg);color:var(--tx2);font-size:13px;transition:opacity .35s var(--ease),visibility .35s}
+.boot.done{opacity:0;visibility:hidden;pointer-events:none}
+.boot-spin{width:28px;height:28px;border:2.5px solid var(--bd);border-top-color:var(--ac);border-radius:50%;animation:spin .8s linear infinite}
+.boot-err{max-width:340px;text-align:center;line-height:1.7}
+.boot-err strong{display:block;color:var(--tx);font-size:15px;margin-bottom:4px}
+.boot-err button{margin-top:12px;height:34px;padding:0 18px;border:0;border-radius:8px;background:var(--ac);color:#fff;font-family:var(--ff);font-size:12.5px;font-weight:600;cursor:pointer}
+@keyframes spin{to{transform:rotate(360deg)}}
+.toast{position:fixed;left:50%;bottom:28px;z-index:var(--z-toast);transform:translate(-50%,12px);background:#0F172A;color:#fff;font-size:12.5px;padding:9px 16px;border-radius:9px;box-shadow:0 8px 24px rgba(15,23,42,.2);opacity:0;visibility:hidden;transition:.2s var(--ease);pointer-events:none;max-width:calc(100vw - 32px);white-space:normal;text-align:center}
+.toast.show{opacity:1;visibility:visible;transform:translate(-50%,0)}
+.up{color:var(--up)}.down{color:var(--dn)}
+.app{display:grid;grid-template-columns:372px minmax(0,1fr);gap:var(--sp-4);padding:var(--sp-4);height:100vh;max-width:2100px;margin:0 auto}
+
+/* ============ LEFT: detail ============ */
+.detail{background:var(--card);border:1px solid var(--bd);border-radius:var(--r-lg);box-shadow:var(--sh-2);overflow-y:auto;overflow-x:hidden;padding:var(--sp-4);animation:rise .5s both}
+.d-head{padding-bottom:12px;border-bottom:1px solid var(--line)}
+.d-date-row{display:flex;align-items:center;gap:10px;min-width:0}
+.d-dt{display:flex;align-items:baseline;gap:9px;min-width:0;flex-wrap:nowrap}
+.d-ym{font-size:var(--t6);font-weight:var(--w-hero);letter-spacing:-.02em;color:var(--tx);white-space:nowrap;font-variant-numeric:tabular-nums;line-height:1.25;display:block}
+.d-week{font-size:var(--t1);font-weight:600;letter-spacing:.02em;color:var(--tx2);white-space:nowrap;flex:none;background:#EDF1F7;border-radius:5px;padding:2px 7px;line-height:1.45}
+.d-badge{margin-left:auto;align-self:center;font-size:var(--t1);font-weight:600;padding:3px 9px;border-radius:20px;letter-spacing:.02em;flex:none;background:#F1F5F9;color:var(--tx2)}
+.d-badge.today{background:#EDF1F7;color:var(--tx2)}
+.d-badge[hidden]{display:none}
+.back-today{display:inline-flex;align-items:center;gap:4px;margin-left:auto;align-self:center;height:25px;padding:0 10px;border:1px solid var(--bd2);border-radius:var(--r-sm);background:var(--card);color:var(--tx2);font-size:var(--t1);font-weight:600;cursor:pointer;transition:.18s var(--ease);font-family:var(--ff);flex:none}
+.back-today:hover{border-color:var(--ac);color:var(--ac);background:var(--ac-s)}
+.back-today[hidden]{display:none}
+.d-duo{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;margin-top:8px;align-items:stretch}
+/* 左右两栏最后一块贴列底：右栏「近5日迷你柱 + 均35」要和左栏「连续 N 日缩量」同一条基线，
+   两块高度不同、各自居中，并排时会各留一条底边，整块看着是歪的 */
+.duo-cell{display:flex;flex-direction:column}
+.duo-cell>.turn-delta{margin-top:auto}
+.duo-cell>.sent-spark{margin-top:auto;padding-bottom:5px}
+.dd-block{padding:8px 0;border-bottom:1px solid var(--bd)}
+.dd-block--last{padding:8px 0 0;border-bottom:0}
+.duo-cell{min-width:0;display:flex;flex-direction:column}
+.duo-cell+.duo-cell{padding-left:16px;border-left:1px solid var(--line)}
+.duo-cell .card-label{margin-bottom:7px}
+.card-label{font-size:var(--t2);font-weight:var(--w-label);letter-spacing:.04em;color:var(--tx3);display:flex;align-items:center;gap:6px;margin-bottom:9px}
+.card-label::before{content:"";width:2.5px;height:11px;border-radius:1px;background:var(--bd2);flex:none}
+
+/* 情绪行单行不放行：原来 wrap 时「▼ 27」这类两位数环比会被挤到第二行，
+   左栏最窄（310px）下看着像多出一行杂项。改为 nowrap + 标签可收缩，
+   空间不够时收窄情绪标签本身，环比数字始终留在同一行右端。 */
+.sent-main{display:flex;align-items:baseline;gap:6px;flex-wrap:nowrap;min-width:0}
+.sent-main .sent-num{flex:none}
+.sent-main .sent-tag{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sent-main .mood-delta{flex:none;margin-left:auto}
+/* 大数字：Inter 本身已经偏紧，-0.045em 会挤在一起，收回到 -0.02em；800 太重、700 更挺 */
+.sent-num b{font-size:30px;font-weight:var(--w-hero);letter-spacing:-.01em;line-height:1;font-variant-numeric:tabular-nums}
+.sent-tag{font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:20px;background:#EDF1F7;color:var(--tx2);letter-spacing:.02em}
+/* 情绪环比（▲/▼ N 分）跟「冰点」标签同行：原来竖排在迷你柱右侧小列里，
+   上下两行右对齐后数字基线互相错位，看着像悬浮在柱子半腰 */
+.mood-delta{font-size:var(--t1);font-weight:var(--w-data);font-variant-numeric:tabular-nums;white-space:nowrap;line-height:1}
+.mood-delta:empty{display:none}
+/* 5 日迷你柱：高亮当前交易日，右下角给"近 5 日均值"，解决单点数字没有位置感的问题
+   注意这里是 flex-end 而不是 center：柱子本来就贴底生长，文字居中的话会浮在柱子腰部，
+   看上去像两套基线；贴底后文字与柱底、与左侧「50/100」的下沿在同一水平线上。 */
+.sent-spark{display:flex;align-items:flex-end;gap:10px;margin-top:5px}
+.mspark{flex:1;min-width:0;height:26px;min-height:26px;display:flex;align-items:flex-end;gap:2px}
+.mspark i{display:block;flex:1;min-height:2px;border-radius:2px 2px 0 0;background:#C8D4E3;transition:height .3s var(--ease),background .2s}
+/* 当前日柱用中性深色强调：红/绿会与"涨跌"语义打架，反而不像高亮 */
+.mspark i.cur{background:#44546A}
+/* 盘中占位柱：浅灰说明"还没有数据"，保留位置让今天在时间轴上可见 */
+.mspark i.pend{background:#E2E8F0}
+.mspark i.pend.cur-pend{background:#CBD5E1}
+/* line-height:1 + 贴底，让文字底边压住柱子的基线；否则 10px 字在 14px 行高里会浮起 2px */
+.sent-rank{flex:none;font-size:var(--t1);font-weight:600;color:var(--tx3);white-space:nowrap;font-variant-numeric:tabular-nums;line-height:1;padding-bottom:1px}
+.sent-rank b{font-weight:var(--w-mid);color:var(--tx2)}
+
+/* 昨日涨停今日表现（赚钱效应）：打板决策的第一指标，原数据在 yp 字段里一直没上界面 */
+.yp-strip{display:grid;grid-template-columns:auto 1fr 1fr 1fr;align-items:center;gap:8px;margin-top:7px;padding:7px 10px;border:1px solid var(--bd);border-radius:var(--r-md);background:var(--card-2)}
+.yp-lb{font-size:var(--t1);font-weight:var(--w-label);letter-spacing:.02em;color:var(--tx2);line-height:1.2;white-space:nowrap}
+.yp-lb small{display:block;font-size:10.5px;font-weight:500;letter-spacing:.01em;color:var(--tx3)}
+.yp-i{display:flex;flex-direction:column;align-items:flex-end;gap:1px;min-width:0}
+.yp-i b{font-size:13.5px;font-weight:var(--w-data);font-variant-numeric:tabular-nums;letter-spacing:-.01em;line-height:1.15;white-space:nowrap}
+.yp-i b small{font-size:10.5px;font-weight:600;color:var(--tx3);letter-spacing:0}
+.yp-i small{font-size:10.5px;font-weight:500;color:var(--tx3);white-space:nowrap}
+
+.idx-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+.idx-item{background:var(--card);border:1px solid var(--bd);border-radius:var(--r-sm);padding:6px 9px 6px;transition:.18s var(--ease);min-width:0}
+.idx-item:hover{border-color:var(--bd2);box-shadow:0 2px 8px -3px rgba(13,21,38,.14);transform:translateY(-1px)}
+.idx-name{display:block;font-size:var(--t1);font-weight:600;color:var(--tx3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.25;letter-spacing:.01em}
+.idx-val{font-size:var(--t5);font-weight:var(--w-data);letter-spacing:-.015em;font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--tx);margin-top:1px;line-height:1.3}
+.idx-pct{display:flex;align-items:baseline;gap:3px;margin-top:0;font-size:12px;font-weight:600;white-space:nowrap;min-width:0;font-variant-numeric:tabular-nums;line-height:1.35}
+.idx-pct i{font-style:normal;font-size:10px}
+
+.turn-main{display:flex;align-items:baseline;gap:6px}
+.turn-main b{font-size:30px;font-weight:var(--w-hero);letter-spacing:-.01em;line-height:1;font-variant-numeric:tabular-nums}
+.turn-main span{font-size:var(--t3);color:var(--tx2);font-weight:600}
+/* 原来把「绝对值 + 较上日% + 连续N日缩量」拼成一句话，在 372px 左栏里会折成
+   「…连续5日缩」+「量」，留一个孤字。改成网格：第一行两个短块，第二行单独一句，
+   每段都 nowrap，宽度不再依赖屏宽。 */
+.turn-delta{display:grid;grid-template-columns:auto auto;justify-content:start;align-items:baseline;gap:3px 7px;max-width:100%;margin-top:7px;font-size:11.5px;font-weight:var(--w-data);padding:5px 9px;border-radius:var(--r-sm);font-variant-numeric:tabular-nums}
+.turn-delta .dmain{white-space:nowrap;letter-spacing:-.005em}
+.turn-delta .dpct{white-space:nowrap;font-size:11px;font-weight:var(--w-mid);padding:1px 5px;border-radius:4px;background:rgba(255,255,255,.72)}
+.turn-delta .streak{grid-column:1/-1;font-size:11px;font-weight:500;opacity:.82;white-space:nowrap;line-height:1.3;letter-spacing:.01em}
+.turn-delta.up{background:#FDF2F2;color:var(--up)}.turn-delta.down{background:#ECFDF5;color:var(--dn)}.turn-delta.flat{background:#F1F5F9;color:var(--tx2)}
+.fund-strip{margin-top:7px;padding:8px 10px;border:1px solid var(--bd);border-radius:var(--r-md);background:var(--card-2)}
+.fund-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.fund-top .fl{font-size:var(--t1);font-weight:var(--w-label);letter-spacing:.04em;color:var(--tx3)}
+.fund-top .fl small{font-size:10.5px;font-weight:500;color:var(--tx3);margin-left:4px;letter-spacing:0}
+.fund-num{font-size:17px;font-weight:var(--w-data);font-variant-numeric:tabular-nums;letter-spacing:-.015em;white-space:nowrap}
+.fund-num small{font-size:var(--t1);font-weight:500;color:var(--tx3);margin-left:2px}
+.fund-num em{font-style:normal;font-size:var(--t1);font-weight:600;margin-left:6px;opacity:.85}
+/* 超大单 / 大单拆分：只给合计看不出是机构撤还是大户撤 */
+.fund-split{display:flex;gap:6px;margin-top:6px}
+.fs{flex:1;min-width:0;display:flex;align-items:baseline;justify-content:space-between;gap:5px;padding:3px 7px;border-radius:var(--r-sm);background:var(--card);border:1px solid var(--bd)}
+.fs label{font-size:10.5px;font-weight:600;color:var(--tx3);white-space:nowrap;letter-spacing:.01em}
+.fs b{font-size:12px;font-weight:var(--w-data);font-variant-numeric:tabular-nums;white-space:nowrap;letter-spacing:-.015em}
+.fs b small{font-size:10px;font-weight:500;color:var(--tx3);margin-left:1px;letter-spacing:0}
+.fund-na{color:var(--tx3);font-size:12px;font-weight:500}
+
+.br-bar{display:flex;height:7px;border-radius:6px;overflow:hidden;background:#EEF2F7;gap:1px}
+.br-bar i{display:block;height:100%;transition:width .35s var(--ease)}
+.br-bar .su{background:var(--up)}.br-bar .sf{background:#B4BECB}.br-bar .sd{background:var(--dn)}
+.br-legend{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:7px;font-size:11.5px;color:var(--tx2)}
+.br-legend b{font-weight:var(--w-data);color:var(--tx);margin-left:4px;font-variant-numeric:tabular-nums}
+.br-dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px;vertical-align:1px}
+.br-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:8px}
+.br-cell{background:var(--card);border:1px solid var(--bd);border-radius:var(--r-sm);padding:6px 4px;min-width:0;text-align:center;transition:.18s var(--ease)}
+.br-cell:hover{border-color:var(--bd2);box-shadow:0 2px 8px -3px rgba(13,21,38,.14)}
+.br-cell label{display:block;font-size:var(--t1);font-weight:600;color:var(--tx3);margin-bottom:2px;white-space:nowrap;letter-spacing:.01em}
+.br-cell b{font-size:16px;font-weight:var(--w-data);font-variant-numeric:tabular-nums;display:block;white-space:nowrap;letter-spacing:-.02em}
+.br-cell b small{font-size:10.5px;color:var(--tx3);font-weight:600;margin-left:1px;letter-spacing:0}
+
+/* Top 4 一行两个：两列网格。2026-11-20 按反馈去掉条形占比（半宽列里题材名放不下），
+   题材名给满宽度，只留序号 + 名称 + 家数。 */
+.cc-list{list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 16px}
+/* 空态不能继承条目栅格：否则「当日无概念数据」会挤进 18px 的序号列竖着排 */
+.cc-list li.mx-empty{grid-column:1/-1;display:block;text-align:center;padding:14px 0;color:var(--tx3);font-size:var(--t2)}
+.cc-list li{display:grid;grid-template-columns:18px minmax(0,1fr) auto;align-items:center;gap:7px}
+.cc-rank{font-size:var(--t1);font-weight:600;color:#6B7A90;font-variant-numeric:tabular-nums;letter-spacing:.01em}
+.cc-list li:first-child .cc-rank{color:var(--ac)}
+.cc-name{font-size:var(--t4);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;letter-spacing:.005em}
+.cc-pct{text-align:right;font-size:var(--t4);font-weight:var(--w-data);color:var(--tx2);font-variant-numeric:tabular-nums}
+.cc-pct small{font-size:10.5px;color:var(--tx3);font-weight:500;margin-left:1px}
+
+/* ============ RIGHT: tabs ============ */
+.right{display:flex;flex-direction:column;min-height:0}
+.tabbar{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex:none}
+.tabs{display:flex;align-items:center;gap:2px;padding:3px;background:#E8EDF4;border-radius:10px;flex:none}
+.tab{height:32px;padding:0 15px;border:0;background:transparent;border-radius:8px;color:#4E5D72;font-size:13px;font-weight:600;font-family:var(--ff);cursor:pointer;position:relative;transition:.16s var(--ease);white-space:nowrap;letter-spacing:-.005em}
+.tab:hover{color:var(--tx)}
+.tab.active{color:var(--tx);background:var(--card);box-shadow:0 1px 2px rgba(13,21,38,.09),0 0 0 .5px rgba(13,21,38,.04)}
+.tab:focus-visible{outline:2px solid var(--ac);outline-offset:1px}
+.tabbar .spacer{flex:1}
+/* 独立在右端的「作者官网」：外链不参与标签切换，描边胶囊与标签同一行高 */
+.tab-site{flex:none;height:30px;padding:0 12px;border:1px solid var(--bd);border-radius:8px;background:var(--card);font-size:12.5px;color:var(--tx2);text-decoration:none;display:inline-flex;align-items:center}
+.tab-site:hover{border-color:var(--bd2);background:var(--card-2);color:var(--ac)}
+.tabbar-hint{font-size:11.5px;color:var(--tx3);margin-right:8px}
+.date-nav{display:flex;align-items:center;gap:6px;flex:none}
+.nav-arrow{width:30px;height:38px;border:1px solid var(--bd);border-radius:var(--r-sm);background:var(--card);color:var(--tx2);cursor:pointer;display:grid;place-items:center;transition:.16s var(--ease);box-shadow:var(--sh-1)}
+.nav-arrow:hover:not(:disabled){border-color:var(--ac);color:var(--ac);background:var(--ac-s)}
+.nav-arrow:disabled{opacity:.35;cursor:not-allowed}
+.nav-arrow svg{width:14px;height:14px}
+
+.date-picker-wrap{position:relative;flex:none;display:flex;min-width:0}
+.date-picker{flex:none;display:flex;align-items:center;height:38px;border:1px solid var(--bd);border-radius:var(--r-sm);background:var(--card);box-shadow:var(--sh-1);overflow:hidden;transition:.2s var(--ease);cursor:pointer;min-width:190px;padding:0;font-family:var(--ff);text-align:left;color:inherit}
+.date-picker:hover,.date-picker:focus-visible{border-color:var(--ac);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.dp-icon{width:36px;align-self:stretch;display:grid;place-items:center;color:var(--tx3);flex:none;transition:.16s}
+.date-picker:hover .dp-icon{color:var(--ac)}
+.dp-icon svg{width:16px;height:16px}
+.dp-text{display:flex;flex-direction:column;gap:0;padding:0 10px;flex:1;min-width:0}
+.dp-text b{font-size:13px;font-weight:var(--w-data);white-space:nowrap;font-variant-numeric:tabular-nums;letter-spacing:-.01em;line-height:1.35}
+.dp-text small{font-size:10.5px;color:var(--tx3);line-height:1.3}
+.dp-chev{width:13px;height:13px;color:var(--tx3);margin-right:11px;flex:none;transition:transform .18s}
+.date-picker.is-open .dp-chev{transform:rotate(180deg)}
+.date-picker.is-open{border-color:var(--ac);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+/* 交易日日历：任意年月可翻（«/‹/›/»），交易日带圆点、选中高亮，
+   点到非交易日自动吸附到最近的一个已采集交易日（往前找，找不到取最早一天） */
+.dp-pop{position:absolute;top:calc(100% + 6px);right:0;z-index:70;width:266px;padding:10px;background:var(--card);border:1px solid var(--bd);border-radius:12px;box-shadow:0 14px 32px -12px rgba(13,21,38,.34),0 0 0 1px rgba(13,21,38,.02);animation:dpIn .14s var(--ease)}
+.dp-pop[hidden]{display:none}
+@keyframes dpIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.dp-hd{display:flex;align-items:center;gap:2px;margin-bottom:6px}
+.dp-hd b{flex:1;text-align:center;font-size:12.5px;font-weight:var(--w-label);color:var(--tx);letter-spacing:.02em;font-variant-numeric:tabular-nums}
+.dp-nav{width:24px;height:24px;border:0;background:none;border-radius:6px;cursor:pointer;color:var(--tx2);display:inline-flex;align-items:center;justify-content:center;font-family:var(--ff);font-size:13px;font-weight:600;transition:background .12s var(--ease)}
+.dp-nav:hover{background:var(--card-2);color:var(--tx)}
+.dp-week{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:2px}
+.dp-week span{text-align:center;font-size:10px;font-weight:600;color:var(--tx3);padding:3px 0 4px}
+.dp-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px}
+.dp-day{position:relative;height:29px;border:0;background:none;border-radius:7px;font-family:var(--ff);font-size:12px;font-weight:600;color:var(--tx2);cursor:pointer;font-variant-numeric:tabular-nums;transition:background .12s var(--ease)}
+.dp-day:hover{background:var(--card-2);color:var(--tx)}
+.dp-day i{position:absolute;left:50%;bottom:2px;width:3px;height:3px;margin-left:-1.5px;border-radius:50%;background:var(--ac);opacity:0}
+.dp-day.has{color:var(--tx)}
+.dp-day.has i{opacity:.7}
+.dp-day.out{color:#C4CEDB}
+.dp-day.out i{opacity:.28}
+.dp-day.newest{box-shadow:inset 0 0 0 1px var(--ac)}
+.dp-day.sel{background:var(--sel);color:#fff;box-shadow:none}   /* 选中日吃掉「最新日」的描边，避免蓝底套蓝圈 */
+.dp-day.sel i{background:#fff;opacity:.95}
+.dp-day:focus-visible{outline:2px solid var(--ac);outline-offset:-2px}
+
+.panel{flex:1;min-height:0;display:flex;flex-direction:column}
+.tabpane{display:none;flex:1;min-height:0;flex-direction:column}
+.tabpane.active{display:flex}
+
+/* ============ Tab1 每日数据 ============ */
+/* 表格卡：table-wrap（滚动区）+ 分页栏合一，一张卡片、一条分隔线，
+   分页栏不再是悬浮在下方、和表格脱节的第二张卡 */
+.tbl-card{position:relative;flex:1;min-height:0;display:flex;flex-direction:column;background:var(--card);border:1px solid var(--bd);border-radius:var(--r-lg);box-shadow:var(--sh-2);overflow:hidden}
+.table-wrap{position:relative;flex:1;min-height:0;overflow:auto;background:var(--card);scroll-margin-top:50px}
+.table{width:100%;min-width:980px;border-collapse:separate;border-spacing:0;white-space:nowrap;table-layout:fixed}
+/* 行高用 JS 算好的像素（--rowH），不用百分比 calc：table 高度设 auto 后，
+   行高不被浏览器按剩余空间二次拉伸，末页行数不足时下方自然留白 */
+/* 列宽集中在这里定义：大屏按断点整体放大，否则多出来的宽度会全被「热门题材」吃掉，
+   数字列仍是 1366 的 80px，第二行小字会溢到隔壁列 */
+.c-date{width:108px}
+.c-idx{width:86px}
+.c-amt{width:88px}
+.c-fund{width:92px}
+.c-cnt{width:84px}
+.c-br{width:112px}
+.c-mood{width:92px}
+.table thead th{position:sticky;top:0;z-index:5;height:42px;background:#F7F9FC;font-size:11.5px;font-weight:600;letter-spacing:.02em;color:#57667A;text-align:left;padding:0 10px;box-shadow:inset 0 -1px 0 var(--bd);cursor:default}
+.table thead th:first-child{padding-left:16px;position:sticky;left:0;z-index:6;background:#F7F9FC}
+.table thead th:last-child{padding-right:18px}
+.table tbody tr{height:var(--rowH,46px);transition:background .16s var(--ease);cursor:pointer}
+.table tbody td{padding:0 10px;border-bottom:1px solid var(--line);font-size:13.5px;font-variant-numeric:tabular-nums;vertical-align:middle;background:var(--card);transition:background .16s var(--ease)}
+.table tbody td:first-child{padding-left:16px;position:sticky;left:0;z-index:2;box-shadow:1px 0 0 var(--line)}
+.table tbody td:last-child{padding-right:18px}
+.table tbody tr:nth-child(even) td{background:#FBFCFE}
+.table tbody tr:hover td{background:#F5F8FD}
+.table tbody tr.selected td{background:var(--sel-s)}
+.table tbody tr:focus-visible{outline:2px solid var(--ac);outline-offset:-2px}
+.table tbody tr:focus-visible td{background:var(--ac-s)}
+.table tbody tr.selected td:first-child{box-shadow:inset 3px 0 0 var(--sel),1px 0 0 var(--line)}
+.table tbody tr.selected .d-cell b{color:var(--sel)}
+.table tbody tr:last-child td{border-bottom:0}
+/* 分页栏 = 表格卡片页脚：上方 1px 分隔线，与数据区视觉上是一体的 */
+.tbl-pager{flex:none;display:flex;align-items:center;gap:12px;height:42px;padding:0 12px 0 8px;background:var(--card);border-top:1px solid var(--line)}
+.tbl-pager[hidden]{display:none}
+.mp-wrap{position:relative}
+.mp-btn{display:inline-flex;align-items:center;gap:7px;height:28px;padding:0 10px;border:1px solid var(--bd2);border-radius:6px;background:#fff;color:var(--tx);font-family:var(--ff);cursor:pointer;transition:.15s var(--ease)}
+.mp-btn:hover{border-color:var(--ac);color:var(--ac)}
+.mp-btn.is-open{border-color:var(--ac);color:var(--ac);background:var(--ac-s)}
+.mp-btn > svg{width:14px;height:14px;flex:none;opacity:.7}
+.mp-btn .mp-chev{width:12px;height:12px;margin-left:-2px;opacity:.55;transition:transform .15s var(--ease)}
+.mp-btn.is-open .mp-chev{transform:rotate(180deg)}
+.mp-btn b{font-size:12px;font-weight:var(--w-mid);font-variant-numeric:tabular-nums;letter-spacing:.02em;white-space:nowrap}
+/* 年月选择弹层：年份 ‹ › 可任意翻，12 个月九宫格；有数据的天数标在月份下方 */
+.mp-pop{position:absolute;bottom:calc(100% + 8px);left:0;z-index:70;width:216px;padding:9px;background:var(--card);border:1px solid var(--bd);border-radius:12px;box-shadow:0 14px 32px -12px rgba(13,21,38,.34),0 0 0 1px rgba(13,21,38,.02);animation:dpIn .14s var(--ease)}
+.mp-pop[hidden]{display:none}
+.mp-hd{display:flex;align-items:center;gap:2px;margin-bottom:6px}
+.mp-hd b{flex:1;text-align:center;font-size:12.5px;font-weight:var(--w-label);color:var(--tx);letter-spacing:.02em;font-variant-numeric:tabular-nums}
+.mp-nav{width:24px;height:24px;border:0;background:none;border-radius:6px;cursor:pointer;color:var(--tx2);display:inline-flex;align-items:center;justify-content:center;font-family:var(--ff);font-size:13px;font-weight:600;transition:background .12s var(--ease)}
+.mp-nav:hover{background:var(--card-2);color:var(--tx)}
+.mp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
+.mp-m{display:flex;flex-direction:column;align-items:center;gap:1px;padding:7px 0 6px;border:0;border-radius:8px;background:none;cursor:pointer;font-family:var(--ff);color:var(--tx);transition:background .12s var(--ease)}
+.mp-m b{font-size:12px;font-weight:var(--w-mid);font-variant-numeric:tabular-nums;letter-spacing:.02em;line-height:1.2}
+.mp-m i{font-style:normal;font-size:9.5px;font-weight:600;color:var(--tx3);font-variant-numeric:tabular-nums;line-height:1}
+.mp-m:hover{background:var(--card-2)}
+.mp-m.on{background:var(--sel-s)}
+.mp-m.on b{color:var(--sel)}
+.mp-m.on i{color:var(--sel);opacity:.8}
+.mp-m.empty{color:#B9C4D2;cursor:default}
+.mp-m.empty b{color:#C2CCDA}
+.mp-m.empty:hover{background:none}
+.mp-m:focus-visible{outline:2px solid var(--ac);outline-offset:-2px}
+.mp-all{display:flex;align-items:center;gap:8px;width:100%;margin-top:6px;padding:7px 9px;border:0;border-top:1px solid var(--line);border-radius:0 0 8px 8px;background:none;cursor:pointer;font-family:var(--ff);font-size:12px;font-weight:600;color:var(--tx);text-align:left;transition:background .12s var(--ease)}
+.mp-all:hover{background:var(--card-2)}
+.mp-all.on{color:var(--sel)}
+.mp-all i{margin-left:auto;font-style:normal;font-size:10px;color:var(--tx3);font-weight:600;font-variant-numeric:tabular-nums}
+.mp-all.on i{color:var(--sel);opacity:.8}
+.mp-all:focus-visible{outline:2px solid var(--ac);outline-offset:-2px}
+.tp-btns{margin-left:auto;display:flex;gap:6px}
+.tp-btns button{height:26px;min-width:76px;padding:0 13px;border:1px solid var(--bd2);border-radius:6px;background:#fff;color:var(--tx2);font-size:11.5px;font-weight:var(--w-label);font-family:var(--ff);cursor:pointer;transition:.15s var(--ease);letter-spacing:.02em}
+.tp-btns button:hover:not(:disabled){border-color:var(--ac);color:var(--ac);background:var(--ac-s)}
+.tp-btns button:disabled{opacity:.45;cursor:default}
+.tp-btns button.is-busy{opacity:.7;cursor:progress}
+.tp-btns button:focus-visible{outline:2px solid var(--ac);outline-offset:1px}
+th.r,td.r{text-align:right !important}
+.d-cell{display:flex;flex-direction:column;gap:0;line-height:1.25;min-width:0}
+.d-cell b{font-size:13px;font-weight:var(--w-data);transition:color .16s;font-variant-numeric:tabular-nums;letter-spacing:-.015em}
+.d-cell span{font-size:11px;color:var(--tx3);font-weight:500;letter-spacing:.01em}
+.idx-c{display:inline-flex;flex-direction:column;align-items:flex-end;gap:1px}
+.idx-c>span{font-size:13.5px;font-weight:600;letter-spacing:-.015em}
+.idx-c small{font-size:10.5px;font-weight:var(--w-mid);letter-spacing:-.01em}
+.cnt{display:inline-grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+  align-items:center;column-gap:3px;min-width:9.6ch;font-weight:var(--w-data);font-size:13px;letter-spacing:-.01em}
+/* 「/」是对齐锚：grid 三列固定居中，位数跨量级也不会推走斜杠 */
+.cnt>.up{text-align:right;justify-self:end}
+.cnt>.down{text-align:left;justify-self:start}
+.cnt .sep{color:#C3CCD9;font-weight:400;justify-self:center}
+.ccnt .cnt{min-width:7ch}
+/* 大屏（≥1900px）行高会被拉到 80~130px，单行数字会飘在中间。
+   这里预埋第二行次级指标，默认隐藏，只在 2K/4K 显示，把行高填实。 */
+.cstack{display:inline-flex;flex-direction:column;align-items:flex-end;gap:1px;line-height:1.22}
+.cstack>small{display:none;font-size:10px;font-weight:500;color:var(--tx3);white-space:nowrap;letter-spacing:.01em}
+.amt-c{display:inline-flex;flex-direction:column;align-items:flex-end;gap:1px;line-height:1.25;font-weight:var(--w-data);font-variant-numeric:tabular-nums}
+.amt-c .av{display:inline-flex;align-items:baseline;gap:3px;font-size:13.5px;letter-spacing:-.015em}
+.amt-c small{font-size:10px;color:var(--tx3);font-weight:500;letter-spacing:0}
+.amt-c .ad{font-size:10.5px;font-weight:var(--w-mid);letter-spacing:.01em}
+.amt-c .ad.flat,.amt-c .ad.na{color:var(--tx3);font-weight:500}
+.concept-tags{display:flex;gap:5px;overflow:hidden;min-width:0}
+/* flex:0 0 auto —— 标签必须保持自然宽度，否则一次铺 8 个时会被压到只剩「(2)」，
+   再由 fitConceptTags 按列宽把越界的收进 +N */
+.concept-tags em{display:inline-flex;align-items:baseline;font-style:normal;font-size:11.5px;font-weight:600;padding:3px 8px;border-radius:5px;background:#F1F5F9;color:var(--tx2);white-space:nowrap;max-width:112px;min-width:0;flex:0 0 auto;letter-spacing:-.005em}
+.concept-tags em .ct-n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.concept-tags em i{font-style:normal;font-size:10px;font-weight:var(--w-mid);margin-left:4px;color:#8A97A8;font-variant-numeric:tabular-nums;flex:none}
+.concept-tags em:first-child{background:#FDF1F1;color:#A81E1E}
+.concept-tags em:first-child i{color:#C05A5A}
+.concept-tags em.more{display:inline-flex;background:transparent;color:var(--tx3);padding:3px 2px;flex:none;font-size:11px;font-weight:var(--w-label)}
+.mood-c{display:inline-flex;justify-content:flex-end;align-items:center;gap:7px}
+.mood-c .mtrack{flex:none;width:32px;height:5px;border-radius:5px;background:#E6EBF3;overflow:hidden}
+.mood-c .mtrack i{display:block;height:100%;border-radius:5px}
+.mood-c b{font-size:13.5px;font-weight:var(--w-data);min-width:22px;text-align:right;letter-spacing:-.02em}
+.fund-c{display:inline-flex;flex-direction:column;align-items:flex-end;line-height:1.25;font-variant-numeric:tabular-nums}
+.fund-c .fv{font-weight:var(--w-data);font-size:13.5px;white-space:nowrap;letter-spacing:-.015em}
+.fund-c .fv small{font-size:10px;color:var(--tx3);font-weight:500;margin-left:1px;letter-spacing:0}
+.fund-c em{font-style:normal;font-size:10.5px;opacity:.85;font-weight:600}
+.fund-c.na{color:var(--tx3);font-weight:500}
+
+/* ============ Tab2 涨停晋级 ============ */
+.promo-wrap{flex:1;min-height:0;overflow:auto;background:var(--card);border:1px solid var(--bd);border-radius:var(--r-lg);box-shadow:var(--sh-2)}
+.pg-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:13px 20px;border-bottom:1px solid var(--bd);background:var(--card);position:sticky;top:0;z-index:6}
+.pg-date{display:flex;align-items:baseline;gap:9px}
+.pg-date b{font-size:14.5px;font-weight:var(--w-hero);letter-spacing:-.015em;font-variant-numeric:tabular-nums}
+.pg-date span{font-size:10.5px;color:var(--tx3);font-weight:600;background:#EDF1F7;border-radius:5px;padding:2px 7px;letter-spacing:.02em}
+.pg-legend{display:flex;align-items:center;gap:18px;margin-left:auto;flex-wrap:wrap;font-size:11.5px;color:var(--tx2);font-weight:500}
+.pg-legend .lg{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.pg-legend .lg i{width:7px;height:7px;border-radius:2px;display:inline-block;flex:none}
+.pg-legend .lg--ok i{background:var(--up)}
+.pg-legend .lg--boom i{background:var(--warn)}
+.pg-legend .lg--fail i{background:#B9C4D2}
+
+.pg-tier{border-bottom:1px solid var(--line)}
+.pg-tier:last-child{border-bottom:0}
+.pg-tier-hd{display:flex;align-items:center;gap:16px;padding:12px 20px 10px}
+.pg-lbl{flex:1;min-width:0;font-size:12.5px;font-weight:var(--w-label);letter-spacing:-.01em;display:flex;flex-direction:column;gap:1px}
+.pg-lbl small{font-size:10.5px;font-weight:500;color:var(--tx3);letter-spacing:.01em}
+.pg-rate{flex:none;width:74px;display:flex;align-items:baseline;gap:1px;justify-content:flex-end}
+.pg-rate em{font-style:normal;font-size:20px;font-weight:var(--w-hero);letter-spacing:-.02em;line-height:1;font-variant-numeric:tabular-nums;color:var(--tx)}
+.pg-rate i{font-style:normal;font-size:10.5px;font-weight:var(--w-mid);color:var(--tx3)}
+.pg-rate.low em{color:var(--tx2);opacity:.75}
+.pg-frac{flex:none;width:168px;display:flex;gap:13px;justify-content:flex-end;font-size:11px;color:var(--tx3);font-variant-numeric:tabular-nums;font-weight:500}
+.pg-frac b{font-weight:var(--w-mid);color:var(--tx2);margin-left:2px;font-size:12px}
+.pg-frac .ok b{color:var(--up)}
+.pg-frac .bm b{color:var(--warn)}
+.pg-bar{flex:none;width:190px;display:flex;height:5px;border-radius:5px;overflow:hidden;background:#EDF1F7;gap:1px}
+.pg-bar i{display:block;height:100%}
+.pg-bar .ok{background:var(--up)}.pg-bar .bm{background:var(--warn)}.pg-bar .fl{background:#CBD5E1}
+
+.pg-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:6px;padding:0 20px 15px}
+.pcard{height:46px;display:grid;grid-template-columns:3px minmax(0,1fr);border:1px solid var(--bd);border-radius:var(--r-sm);background:#fff;overflow:hidden;transition:border-color .15s var(--ease),box-shadow .15s var(--ease),transform .15s var(--ease);cursor:pointer;text-align:left;padding:0;font-family:var(--ff)}
+.pcard:hover{border-color:#B8C6DC;box-shadow:0 3px 10px -3px rgba(13,21,38,.18);transform:translateY(-1px)}
+.pcard .bar{background:#DDE4EE}
+.pcard .txt{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:0;padding:0 8px;min-width:0;text-align:center}
+.pcard .nm{display:flex;align-items:baseline;justify-content:center;gap:3px;min-width:0;max-width:100%;overflow:hidden;line-height:1.35}
+.pcard .nb{font-size:12.5px;font-weight:var(--w-data);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--tx);letter-spacing:-.015em;min-width:0}
+.pcard .st{font-style:normal;flex:none;font-size:10.5px;font-weight:var(--w-mid);letter-spacing:-.01em}
+.pcard .st--ok{color:var(--up)}
+.pcard .st--boom{color:var(--warn)}
+.pcard .st--fail{color:#64748B}
+.pcard .tg{max-width:100%;font-size:10.5px;font-weight:500;color:var(--tx3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3;letter-spacing:.01em}
+.pcard--ok{border-color:rgba(220,38,38,.22);background:#FEF8F8}
+.pcard--ok .bar{background:var(--up)}
+.pcard--boom{border-color:rgba(180,83,9,.24);background:#FFFCF5}
+.pcard--boom .bar{background:var(--warn)}
+.pcard--fail .bar{background:#DDE4EE}
+.pcard--fail .nb{color:var(--tx2);font-weight:600}
+/* 首板：当日不构成晋级。色条必须中性——用红系会被读成"红色=成功"，
+   与 成/炸/败 的红黄灰语义打架。这里用石板灰，只表示"今日新增的观察对象"。 */
+.pcard--first .bar{background:#7C8CA3}
+.pcard--first .nb{color:var(--tx)}
+.pg-pending{flex:none;font-size:10.5px;font-weight:600;color:var(--tx3);background:var(--card-2);border:1px solid var(--bd);border-radius:20px;padding:3px 10px;letter-spacing:.02em}
+.pg-more{margin:0 20px 15px;height:27px;padding:0 12px;border:1px solid var(--bd2);border-radius:var(--r-sm);background:#fff;color:var(--tx2);font-size:11px;font-weight:600;font-family:var(--ff);cursor:pointer;transition:.16s var(--ease)}
+.pg-more:hover{border-color:var(--ac);color:var(--ac);background:var(--ac-s)}
+.pg-cards[hidden],.pg-more[hidden]{display:none}
+
+/* ============ Tab3/4 矩阵：近15日等宽单页 ============ */
+.mx-wrap{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;background:var(--card);border:1px solid var(--bd);border-radius:var(--r-lg);box-shadow:var(--sh-2)}
+.mx-note{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:11px 16px;font-size:11.5px;color:var(--tx3);border-bottom:1px solid var(--bd);background:var(--card);flex:none}
+.mx-note .mx-range{margin-left:auto;font-size:10px;font-weight:var(--w-label);color:var(--ac);background:var(--ac-s);border-radius:5px;padding:2px 8px;white-space:nowrap;letter-spacing:.03em}
+.mx-scroll{flex:1;min-height:0;overflow:auto}
+.mx{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0}
+.mx thead th{position:sticky;top:0;z-index:5;height:40px;background:#F7F9FC;border-bottom:1px solid var(--bd);font-size:11px;font-weight:600;color:#57667A;padding:0 4px;text-align:center;white-space:nowrap;font-variant-numeric:tabular-nums}
+.mx thead th b{display:block;font-size:11px;letter-spacing:-.02em;color:var(--tx2);line-height:1.25}
+.mx thead th small{display:block;font-size:10px;font-weight:500;color:var(--tx3);margin-top:0;line-height:1.3;letter-spacing:.02em}
+.mx thead th.lbl{position:sticky;left:0;z-index:6;text-align:left;padding-left:16px;box-shadow:1px 0 0 var(--bd);background:#F7F9FC}
+.mx td{border-bottom:1px solid var(--line);border-right:1px solid #F7F9FC;padding:5px 5px;min-width:0;vertical-align:middle}
+.mx td:last-child{border-right:0}
+.mx tbody tr:hover td{background:#F7FAFD}
+.mx tbody tr:hover td.lbl{background:#F7FAFD}
+.mx-ladder thead th.lbl{width:80px}
+/* 概念热度行头只有四字「题材概念」，左对齐会贴着 sticky 边线显得偏；居中更稳 */
+.mx-heat thead th.lbl{width:148px;text-align:center;padding-left:4px}
+.pcard.has-chart:hover{text-decoration:none}
+
+/* 连板天梯：行=板数，列=交易日。行高不写死，随格内个股名行数撑开，
+   1 只的行压到最小、多只的行变高；上下留白用 .lbc 的 padding 控制。
+   同一行内各列文字顶部对齐：vertical-align:middle 会让 1 只的格和
+   多只的格从中间各排各的，同一水平线上首只股票参差不齐 */
+.mx-ladder{height:100%}
+.mx-ladder td{vertical-align:top}
+/* 板数列不跟随顶部对齐：X 板 / N 只 是行标签，垂直居中更像行头 */
+.mx-ladder td.lbl{vertical-align:middle}
+.mx-ladder td .lbc{padding:5px 2px}
+.mx-ladder td.lbl{position:sticky;left:0;z-index:2;background:var(--card);padding:0 12px;box-shadow:1px 0 0 var(--line)}
+.mx-ladder td.lbl b{display:block;font-size:13px;font-weight:var(--w-hero);letter-spacing:-.01em;font-variant-numeric:tabular-nums;line-height:1.2}
+.mx-ladder td.lbl small{display:block;font-size:10.5px;font-weight:500;color:var(--tx3);margin-top:1px}
+.mx-ladder tbody tr.hi td.lbl{background:linear-gradient(90deg,#FDF3F3,#FFFFFF 92%)}
+.lbc{display:flex;flex-direction:column;align-items:center;gap:1px;min-width:0;text-align:center}
+.lbc span{max-width:100%;font-size:12px;font-weight:600;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--tx2);cursor:pointer;letter-spacing:-.01em}
+.lbc span:hover{color:var(--ac)}
+.lbc span.top{color:var(--m-hot);font-weight:var(--w-data)}
+.lbc .none{font-size:11.5px;font-weight:400;color:var(--tx4);cursor:default}
+.mx tfoot td,.mx tfoot th{height:32px;background:#FAFBFD;border-top:1px solid var(--bd);font-size:11.5px;font-weight:var(--w-label);color:var(--tx2);text-align:center;font-variant-numeric:tabular-nums;padding:0 4px}
+.mx tfoot td.lbl,.mx tfoot th.lbl{text-align:left;padding-left:16px;font-size:10.5px;font-weight:600;color:var(--tx3)}
+
+/* 概念热度：行=概念，列=交易日 */
+.mx-heat{height:100%}
+.mx-heat tbody tr{height:31px}
+.mx-heat td.lbl{position:sticky;left:0;z-index:2;background:var(--card);padding:0 12px;box-shadow:1px 0 0 var(--line)}
+.hl-row{display:flex;align-items:center;gap:7px;min-width:0}
+.hl-rk{width:14px;flex:none;text-align:right;font-size:10.5px;font-weight:var(--w-mid);color:#7A8798;font-variant-numeric:tabular-nums}
+.hl-nm{font-size:11.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;letter-spacing:-.01em}
+.hl-d{flex:none;margin-left:auto;font-size:10px;font-weight:var(--w-mid);color:#6B7A90;background:#EEF2F7;border-radius:4px;padding:1px 4px;font-variant-numeric:tabular-nums}
+.mx-heat td.hc{padding:0;text-align:center;border-right:1px solid #FBFCFE}
+.hcell{display:grid;place-items:center;height:31px;font-size:11px;font-weight:var(--w-data);color:var(--tx);font-variant-numeric:tabular-nums}
+.hcell.zero{color:var(--tx4);font-weight:500;font-size:11.5px}
+.hcell.hot{color:#8F1414}
+/* 概念热度悬浮明细卡：数字格 hover 弹出，题材名 + 日期 + 家数徽章 + 个股名 3 列网格 */
+.mx-heat td.hc[data-tk]{cursor:default}
+.mx-heat td.hc[data-tk]:hover{box-shadow:inset 0 0 0 2px rgba(220,38,38,.4)}
+/* 每日数据题材标签 / 左侧 Top5 行：同样挂 data-tk 悬浮名单 */
+.concept-tags em[data-tk]{cursor:default}
+.concept-tags em[data-tk]:hover{background:#E7EDF4}
+#dConcepts li[data-tk]{cursor:default}
+#dConcepts li[data-tk]:hover{background:#FAFBFD}
+/* 历史数据口径说明：早年只有指数/成交额，涨停族等指标无历史源时，
+   用一张说明卡替代成片破折号，明确告知「哪些有、哪些没有、从何时起有」 */
+.na-note{display:flex;align-items:flex-start;gap:9px;padding:11px 12px;border:1px dashed var(--bd2);
+  border-radius:var(--r-md);background:var(--card-2);margin-top:8px}
+.na-note .ni{width:17px;height:17px;border-radius:50%;background:#EDF1F7;color:var(--tx3);
+  display:grid;place-items:center;flex:none;font-size:11px;font-weight:var(--w-mid);font-style:normal;margin-top:1px}
+.na-note .nt{font-size:var(--t2);color:var(--tx2);line-height:1.6;min-width:0}
+.na-note .nt b{color:var(--tx);font-weight:var(--w-data)}
+.na-note .nt .avail{color:var(--dn);font-weight:600}
+.na-note .nt .avail2{color:var(--m-hot,#D92B2B);font-weight:600}
+.na-note{border-color:var(--bd);background:var(--card)}
+.na-note[hidden]{display:none!important}
+.na-note [hidden]{display:none!important}
+#dMoodCell.na .sent-main,#dMoodCell.na .sent-spark,.na-hidden{display:none!important}
+#dMoodCell .na-mood{display:none}
+#dMoodCell.na .na-mood{display:flex;align-items:center;min-height:46px;color:var(--tx3);
+  font-size:var(--t2);font-weight:600}
+#heatTip{position:fixed;z-index:90;width:300px;max-width:calc(100vw - 16px);background:var(--card);
+  border:1px solid var(--bd2);border-radius:11px;padding:10px 12px 11px;
+  box-shadow:0 14px 38px rgba(15,23,42,.16),0 2px 6px rgba(15,23,42,.06);
+  opacity:0;transform:translateY(5px);pointer-events:none;
+  transition:opacity .15s var(--ease),transform .15s var(--ease)}
+#heatTip.show{opacity:1;transform:none}
+.ht-hd{display:flex;align-items:center;gap:7px;margin-bottom:8px}
+.ht-nm{font-size:12.5px;font-weight:var(--w-data);color:var(--tx);letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.ht-dt{flex:none;font-size:10.5px;font-weight:600;color:var(--tx3);font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.ht-n{flex:none;margin-left:auto;font-size:10.5px;font-weight:var(--w-mid);color:#A81E1E;background:#FDF1F1;border-radius:20px;padding:2px 8px;font-variant-numeric:tabular-nums;letter-spacing:.02em;white-space:nowrap}
+/* 热点名单默认全部展开：原来 max-height:252px 让 39 只涨停的题材（如人形机器人）
+   只能看到 9 行、还要拖滚动条。现在只在内容真的超出视口时才滚动。 */
+.ht-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;max-height:calc(100vh - 90px);overflow-y:auto}
+.ht-chip{font-size:11px;font-weight:600;color:var(--tx2);background:#F4F7FA;border:1px solid #E7EDF4;border-radius:6px;padding:4px 6px;line-height:1.3;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:-.01em}
+.ht-none{font-size:10.5px;font-weight:500;color:var(--tx3);padding:2px 0 1px}
+.mx-empty{padding:32px 16px;text-align:center;color:var(--tx3);font-size:12.5px}
+
+/* ============ 悬浮个股图表 ============ */
+.has-chart{cursor:pointer}
+.has-chart:hover{text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px}
+.kp{position:fixed;z-index:80;width:573px;background:var(--card);border:1px solid var(--bd2);
+  border-radius:13px;box-shadow:0 18px 48px rgba(15,23,42,.16),0 2px 6px rgba(15,23,42,.06);
+  opacity:0;transform:translateY(6px) scale(.985);transition:opacity .16s var(--ease),transform .16s var(--ease);
+  pointer-events:none;overflow:hidden}
+.kp.on{opacity:1;transform:none;pointer-events:auto}
+.kp-hd{display:flex;align-items:center;gap:8px;padding:11px 13px 9px;border-bottom:1px solid var(--bd)}
+.kp-hd .nm{font-size:13.5px;font-weight:700;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kp-hd .cd{font-size:10.5px;color:var(--tx3);font-variant-numeric:tabular-nums;padding:1px 6px;border-radius:5px;background:var(--card-2)}
+.kp-hd .px{margin-left:auto;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
+.kp-hd .chg{font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums}
+.kp-hd .x{width:20px;height:20px;border:0;background:transparent;color:var(--tx3);font-size:15px;line-height:1;cursor:pointer;border-radius:5px;margin-left:2px}
+.kp-hd .x:hover{background:var(--bg);color:var(--tx)}
+.kp-empty-box{position:absolute;left:0;right:0;top:42px;bottom:0;display:grid;place-items:center;
+  text-align:center;background:rgba(255,255,255,.94);font-size:12.5px;color:var(--tx3);line-height:1.75;padding:18px}
+.kp-empty-box[hidden]{display:none}
+/* 新浪实时图兜底：本地行情拿不到时用新浪绘制的 gif（黑底，与看板图区隔） */
+.kp-sina{display:grid;gap:6px;padding:9px 13px 11px}
+.kp-sina[hidden]{display:none}
+.kp-sina img{display:block;width:100%;height:auto;aspect-ratio:545/300;background:#fff;
+  border-radius:6px;border:1px solid var(--bd)}
+.kp-sina .cap{font-size:10px;color:var(--tx3);text-align:center;letter-spacing:.03em}
+/* 核心指数分时：并入核心指数区最下方，仅图本身；高度与旧异动图一致，
+   无数据的日期用等高的占位块，切换日期时左栏不发生跳动 */
+#dMiniWrap{padding-top:2px;position:relative}
+.mini-chart{height:170px;width:100%}
+.mini-cap{position:absolute;left:8px;top:3px;z-index:2;font-size:10px;font-weight:600;
+  letter-spacing:.02em;color:var(--tx3);pointer-events:auto;cursor:default;
+  background:linear-gradient(90deg,rgba(255,255,255,.92),rgba(255,255,255,0))}
+.mini-empty{height:170px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  margin-top:2px;border:1px dashed var(--bd);border-radius:var(--r-sm);background:var(--card-2);
+  color:var(--tx3);font-size:11.5px;text-align:center;padding:0 10px}
+.mini-empty[hidden]{display:none!important}
+.mini-empty b{font-size:12px;font-weight:var(--w-label);color:var(--tx2)}
+.mini-empty span{font-size:10.5px;line-height:1.5}
+
+/* 核心指数头：标题 + 设置入口 */
+.idx-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.idx-head .card-label{margin-bottom:0}
+/* 设置弹层是 position:absolute，必须让这个块成为它的定位祖先。
+   否则弹层相对 body 定位，而 offsetTop 又是块内坐标，左栏一滚动两者就脱节。 */
+#dIdxBlock{position:relative}
+.idx-set{flex:none;display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 7px;margin-bottom:5px;
+  border:1px solid var(--bd);border-radius:6px;background:var(--card);color:var(--tx3);
+  font-size:10.5px;font-weight:600;cursor:pointer;transition:.15s var(--ease);letter-spacing:.02em}
+.idx-set:hover{border-color:var(--bd2);color:var(--tx);background:var(--card-2)}
+.idx-set svg{width:12px;height:12px;flex:none}
+/* 卡片可点选：选中态用品牌蓝底 + 底部蓝条，避免占用 A股上涨红语义。 */
+.idx-item{position:relative;cursor:pointer;outline:none}
+.idx-item:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.idx-item.on{background:var(--sel-s);border-color:var(--sel-bd);box-shadow:inset 0 0 0 1px rgba(37,99,235,.12)}
+.idx-item.on::after{content:"";position:absolute;left:50%;bottom:-1px;transform:translateX(-50%);
+  width:16px;height:2px;border-radius:2px 2px 0 0;background:var(--sel)}
+
+/* 自定义核心指数弹层 */
+.idx-pop{position:absolute;z-index:60;width:268px;padding:10px 10px 8px;background:var(--card);
+  border:1px solid var(--bd2);border-radius:12px;box-shadow:0 18px 40px -18px rgba(13,21,38,.35),0 2px 8px -4px rgba(13,21,38,.16)}
+.idx-pop[hidden]{display:none}
+.idx-pop .ip-hd{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:0 2px 7px}
+.idx-pop .ip-hd b{font-size:12px;font-weight:var(--w-label);letter-spacing:-.01em}
+.idx-pop .ip-hd small{font-size:10px;color:var(--tx3);font-weight:600}
+.idx-pop .ip-list{max-height:260px;overflow-y:auto;margin:0 -2px}
+.idx-pop .ip-row{display:flex;align-items:center;gap:6px;padding:3px 4px;border-radius:6px}
+.idx-pop .ip-row:hover{background:var(--card-2)}
+.idx-pop .ip-row label{display:flex;align-items:center;gap:7px;flex:1;min-width:0;cursor:pointer}
+.idx-pop .ip-row input{margin:0;width:13px;height:13px;accent-color:var(--ac);cursor:pointer}
+.idx-pop .ip-row .nm{font-size:11.5px;font-weight:600;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.idx-pop .ip-row .mk{font-size:9.5px;font-weight:600;color:var(--tx3);padding:0 4px;border-radius:3px;background:#EEF2F7}
+.idx-pop .ip-row .ord{font-size:9.5px;color:var(--tx3);font-variant-numeric:tabular-nums;width:12px;text-align:center}
+.idx-pop .mv{display:flex;gap:2px;flex:none}
+.idx-pop .mv button{width:18px;height:18px;border:1px solid var(--bd);border-radius:4px;background:var(--card);
+  color:var(--tx2);font-size:10px;line-height:1;cursor:pointer;padding:0}
+.idx-pop .mv button:disabled{opacity:.32;cursor:not-allowed}
+.idx-pop .ip-ft{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;
+  padding:8px 2px 0;border-top:1px solid var(--line)}
+.idx-pop .ip-ft .cnt{font-size:10.5px;color:var(--tx3);font-weight:600}
+.idx-pop .ip-ft .cnt.warn{color:#B45309}
+.idx-pop .ip-btns{display:flex;gap:6px}
+.idx-pop .ip-btns button{height:24px;padding:0 9px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid var(--bd);background:var(--card);color:var(--tx2)}
+.idx-pop .ip-btns .ok{border-color:var(--ac);background:var(--ac);color:#fff}
+.idx-pop .ip-btns .ok:disabled{opacity:.45;cursor:not-allowed}
+.idx-pop .ip-btns .reset{border-color:transparent;background:transparent;color:var(--tx3);padding:0 4px}
+
+::placeholder{color:var(--tx4)}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@media(min-width:1181px) and (max-width:1500px){
+  .app{grid-template-columns:330px minmax(0,1fr);gap:16px;padding:16px}
+  .detail{padding:20px 18px}
+  .idx-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+  .idx-item{padding:8px 8px 7px}
+  .idx-val{font-size:13px}
+  /* 330px 左栏的半栏只有 ~145px：「59/100 + 亢奋 + ▲32」必须整行放下，
+     否则标签会被 ellipsis 截成「亢…」。这里把三段都收紧并禁止标签自身收缩 */
+  .sent-main{gap:4px}
+  .sent-num b{font-size:23px}
+  .sent-tag{font-size:10px;padding:2px 5px;flex:none}
+  .mood-delta{font-size:10px}
+  .dd-block{padding:13px 0}
+  .d-ym{font-size:16.5px}
+  .d-week{font-size:11px;padding:2px 6px}
+  /* 情绪数字单独控制（23px，见上）：原来与成交额共用 27px，会把标签挤成「亢…」 */
+  .turn-main b{font-size:27px}
+  .tabbar-hint{display:none}
+  .date-picker{min-width:170px}
+  .tab{padding:0 13px;font-size:12.5px}
+}
+@media(max-width:1180px){
+  .app{grid-template-columns:310px minmax(0,1fr);gap:14px;padding:14px}
+  .detail{padding:18px 16px}
+  .idx-grid{grid-template-columns:1fr 1fr}
+  .d-duo{gap:12px}
+  .d-ym{font-size:16px}
+  .turn-main b,.sent-num b{font-size:26px}
+  /* 310px 左栏下情绪半栏只有 ~125px：字号与间距各收一点，
+     保证「16/100 + 冰点 + ▼27」这一行放得下，不靠省略号截断情绪标签 */
+  .sent-main{gap:4px}
+  .sent-num b{font-size:21px}
+  .sent-tag{font-size:10px;padding:2px 5px}
+  .mood-delta{font-size:10px;font-weight:var(--w-data)}
+  .tabbar-hint{display:none}
+  .date-picker{min-width:156px}
+  .tab{height:30px;padding:0 11px;font-size:12px}
+  .pg-tier{grid-template-columns:108px minmax(0,1fr);gap:14px}
+}
+@media(max-width:960px){
+  .app{display:flex;flex-direction:column;height:auto;min-height:100vh;gap:14px;padding:14px}
+  .right{display:contents}
+  .tabbar{order:-1;position:sticky;top:0;z-index:30;background:var(--bg);flex-wrap:wrap;gap:8px;padding:8px 0 6px;margin-bottom:0}
+  .tabs{flex-wrap:wrap}
+  .tab{height:32px;padding:0 13px;font-size:12.5px}
+  .detail{order:0;max-height:none;flex:none;margin-bottom:2px}
+  .panel{order:1;min-height:600px}
+  .tabbar-hint{display:none}
+  .date-nav{width:100%}
+  .date-picker-wrap{flex:1}
+  .date-picker{flex:1;min-width:0}
+  .table{height:auto;min-height:0}
+  .table tbody tr{height:56px}
+  .pg-head{padding:11px 14px;gap:10px}
+  .pg-tier-hd{flex-wrap:wrap;gap:10px 14px;padding:12px 14px 9px}
+  .pg-lbl{flex:1 1 100%}
+  .pg-frac{width:auto}
+  .pg-bar{width:100%}
+  .pg-cards{padding:0 14px 14px}
+  .pg-more{margin:0 14px 14px}
+  .tabpane{scroll-margin-top:122px}
+}
+@media(max-width:560px){
+  .app{padding:12px}
+  .dp-pop{width:min(300px,calc(100vw - 24px));right:auto;left:0}
+  .d-duo{grid-template-columns:1fr}
+  .duo-cell+.duo-cell{padding-left:0;border-left:0;margin-top:14px}
+  .d-date-row{flex-wrap:wrap;gap:8px}
+  .tabbar{flex-wrap:wrap}
+  .tabs{width:100%}
+  .date-nav{width:100%}
+  .date-picker-wrap{flex:1}
+  .date-picker{flex:1;min-width:0}
+  .idx-grid{grid-template-columns:1fr 1fr}
+  .br-grid{grid-template-columns:repeat(2,1fr)}
+}
+
+/* ---- 概念榜「题材 / 公告」切换 ---- */
+.mx-filter{display:inline-flex;align-items:center;gap:2px;padding:2px;background:#E8EDF4;border-radius:7px;flex:none}
+.mx-filter button{height:21px;padding:0 9px;border:0;border-radius:5px;background:transparent;color:#5A6A80;font-size:10.5px;font-weight:var(--w-label);font-family:var(--ff);cursor:pointer;transition:.15s var(--ease);letter-spacing:.02em;white-space:nowrap}
+.mx-filter button:hover:not(.on){color:var(--tx)}
+.mx-filter button.on{background:#fff;color:var(--tx);box-shadow:0 1px 2px rgba(13,21,38,.1)}
+.mx-filter button i{font-style:normal;font-weight:var(--w-mid);color:var(--tx3);margin-left:3px;font-variant-numeric:tabular-nums}
+
+/* 未晋级折叠：视觉上比"展开其余"更弱，避免和正文抢注意力 */
+.pg-more--dead{border-style:dashed;color:var(--tx3);background:var(--card-2)}
+.pg-more--dead:hover{color:var(--tx2);border-color:var(--bd2);background:#fff}
+
+/* ---- 矮屏（1366×768 / 1280×720 笔记本）：左栏原本溢出 ~150px，第 5 条概念看不见。
+   两手一起用：① 按高度压缩间距；② 左栏改成纵向 flex，只让「热门题材」这一块
+   自己滚动——否则整块面板滚动会把核心指数、市场广度一起带走。---- */
+@media(min-width:961px){
+  .detail{display:flex;flex-direction:column}
+  .detail>*{flex:0 0 auto}
+  .dd-block--last{flex:1 1 auto;min-height:74px;display:flex;flex-direction:column}
+  .dd-block--last .cc-list{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;padding-right:2px;scrollbar-width:thin}
+}
+@media(min-width:961px) and (max-height:840px){
+  .app{padding:12px;gap:14px}
+  .detail{padding:12px 16px}
+  .d-head{padding-bottom:9px}
+  .d-ym{font-size:16.5px}
+  .d-duo{margin-top:9px}
+  .dd-block{padding:8px 0}
+  .dd-block--last{padding:8px 0 0}
+  .card-label{margin-bottom:9px}
+  .sent-num b,.turn-main b{font-size:25px}
+  .sent-spark{margin-top:5px}
+  .mspark{height:19px;min-height:19px}
+  .yp-strip{margin-top:6px;padding:5px 9px}
+  .fund-strip{margin-top:6px;padding:6px 9px 6px}
+  .fund-num{font-size:15px}
+  .idx-item{padding:5px 8px 5px}
+  .idx-val{font-size:12.5px}
+  .br-legend{margin-top:6px}
+  .br-grid{margin-top:7px}
+  .br-cell{padding:6px 5px}
+  .br-cell b{font-size:14px}
+  .br-cell label{margin-bottom:3px}
+  .cc-list{gap:5px}
+  .cc-name,.cc-pct{font-size:12px}
+}
+
+/* 720p 笔记本：上面那一档还不够，再收一轮，此时概念列表允许内部滚动 */
+@media(min-width:961px) and (max-height:760px){
+  .detail{padding:10px 14px}
+  .d-head{padding-bottom:7px}
+  .d-ym{font-size:15.5px}
+  .d-duo{margin-top:8px}
+  .dd-block{padding:6px 0}
+  .dd-block--last{padding:6px 0 0}
+  .card-label{margin-bottom:7px}
+  .sent-num b,.turn-main b{font-size:23px}
+  .sent-tag{padding:2px 8px}
+  .mspark{height:17px;min-height:17px}
+  .yp-strip{margin-top:5px;padding:4px 8px}
+  .fund-strip{margin-top:5px;padding:5px 8px}
+  .fund-split{margin-top:5px}
+  .idx-item{padding:4px 7px}
+  .idx-val{font-size:12px}
+  .br-grid{margin-top:6px}
+  .br-cell{padding:5px 4px}
+  .br-cell b{font-size:13.5px}
+  .cc-list{gap:4px}
+  /* 这一档概念列表可能放不下 5 条，底部做淡出提示"可以继续滚"，否则看着像被裁掉 */
+  .dd-block--last .cc-list{-webkit-mask-image:linear-gradient(#000 calc(100% - 16px),transparent);mask-image:linear-gradient(#000 calc(100% - 16px),transparent)}
+}
+
+/* ============ 超宽矮屏档（如 2560×1080 带系统缩放，视口高 ~700-780px） ============
+   左栏是固定高度堆叠，矮屏下装不下只能两侧各自内部滚动。这里用宽度换高度：
+   左栏加宽到 460px，核心指数一行铺 6 张（省一整行 ~60px），异动分时图压扁，
+   再收紧各块留白，让左栏一屏完整放下，免去左右两根滚动条。 */
+@media(min-width:1501px) and (max-height:880px){
+  .app{grid-template-columns:460px minmax(0,1fr)}
+  .detail{padding:9px 14px}
+  .d-head{padding-bottom:6px}
+  .d-duo{margin-top:5px}
+  .duo-cell>.sent-spark{padding-bottom:2px}
+  .idx-grid{grid-template-columns:repeat(6,minmax(0,1fr));gap:4px}
+  .idx-item{padding:2px 5px}
+  .idx-name{font-size:10px}
+  .idx-val{font-size:11.5px;line-height:1.2}
+  .idx-pct{font-size:10.5px}
+  .mini-chart{height:80px;min-height:80px}
+  .mini-empty{height:80px;gap:2px}
+  .mini-empty span{display:block}
+  .dd-block{padding:2px 0}
+  .dd-block--last{padding:2px 0 0}
+  .card-label{margin-bottom:4px}
+  .sent-num b,.turn-main b{font-size:19px}
+  .yp-strip{margin-top:3px;padding:3px 8px}
+  .fund-strip{margin-top:3px;padding:2px 8px}
+  .fund-num{font-size:13px}
+  .fs{padding:2px 7px}
+  .mspark{height:12px;min-height:12px}
+  .br-grid{margin-top:3px}
+  .br-cell{padding:3px 4px}
+  .br-cell b{font-size:12.5px}
+  .br-legend{margin-top:3px}
+}
+@media(min-width:1501px) and (max-height:700px){
+  .mini-chart{height:80px;min-height:80px}
+  .mini-empty{height:80px;gap:2px}
+  .mini-empty span{display:block}
+  .mspark{height:11px;min-height:11px}
+  .br-cell{padding:2px 4px}
+}
+
+/* 1280 档：右栏只有 ~900px。原来靠 980 的最小宽度撑着，结果是横向滚动。
+   压到 900 后固定列宽不变、被牺牲的是「热门题材」。这里把九个固定列各收几像素
+   （共省 90px），用固定布局把剩下的 ~170px 留给题材列——既能放两个标签，
+   也不会因为铺满 8 个标签把整张表撑出容器（auto 布局会）。 */
+@media(min-width:961px) and (max-width:1340px){
+  .table{min-width:900px;table-layout:fixed}
+  .c-date{width:96px}
+  .c-idx{width:76px}
+  .c-amt{width:80px}
+  .c-fund{width:84px}
+  .c-cnt{width:78px}
+  .c-br{width:104px}
+  .c-mood{width:82px}
+  .table thead th,.table tbody td{padding:0 7px}
+  .table thead th:first-child,.table tbody td:first-child{padding-left:12px}
+  .table thead th:last-child,.table tbody td:last-child{padding-right:12px}
+  /* 这一档题材列只有 ~170px，标签瘦一点才放得下两个（否则只剩一个 + 一个 +N） */
+  .concept-tags{gap:4px}
+  .concept-tags em{font-size:11px;padding:3px 5px;max-width:84px}
+  .concept-tags em i{font-size:9.5px;margin-left:3px}
+}
+
+/* ---- 2K（2560×1440）：只放大字号/面板宽度，不改结构与信息密度 ---- */
+@media(min-width:2000px){
+  body{font-size:15.5px}
+  .app{max-width:2480px;grid-template-columns:428px minmax(0,1fr);gap:22px;padding:22px}
+  .c-date{width:136px}
+  .c-idx{width:112px}
+  .c-amt{width:114px}
+  .c-fund{width:120px}
+  .c-cnt{width:128px}
+  .c-br{width:132px}
+  .c-mood{width:118px}
+  .detail{padding:20px 22px}
+  .d-ym{font-size:20px}
+  .d-week{font-size:12px}
+  .d-duo{gap:18px;margin-top:16px}
+  .dd-block{padding:14px 0}
+  .dd-block--last{padding:14px 0 0}
+  .card-label{font-size:12.5px;margin-bottom:15px}
+  .sent-num b,.turn-main b{font-size:34px}
+  .sent-tag{font-size:12px}
+  .mspark{height:30px;min-height:30px}
+  .sent-rank{font-size:12px}
+  .yp-strip{padding:9px 12px;margin-top:12px}
+  .yp-lb{font-size:12px}
+  .yp-i b{font-size:14px}
+  .idx-item{padding:9px 11px 8px}
+  .idx-name{font-size:12.5px}
+  .idx-val{font-size:15.5px}
+  .idx-pct{font-size:12.5px}
+  .br-cell{padding:11px 8px}
+  .br-cell b{font-size:17.5px}
+  .cc-list{gap:9px}
+  .cc-name,.cc-pct{font-size:14px}
+  .tab{height:36px;padding:0 18px;font-size:14px}
+  .nav-arrow{width:34px;height:42px}
+  .date-picker{min-width:214px;height:42px}
+  .dp-text b{font-size:14px}
+  .table{min-width:1120px}
+  .table thead th{height:46px;font-size:11.5px}
+  .table tbody td{font-size:16px}
+  .d-cell b{font-size:15.5px}
+  .d-cell span{font-size:11.5px}
+  .idx-c>span,.amt-c .av,.mood-c b,.fund-c .fv{font-size:16px}
+  .cnt{font-size:15.5px}
+  .cstack>small{display:block;font-size:11.5px}
+  .concept-tags em{font-size:12.5px;max-width:140px;padding:4px 9px}
+  .pcard{height:52px}
+  .pcard .nb{font-size:13.5px}
+  .pcard .tg{font-size:11px}
+  .pg-cards{grid-template-columns:repeat(auto-fill,minmax(152px,1fr));gap:8px}
+  .pg-head{padding:15px 24px}
+  .pg-tier-hd{padding:14px 24px 12px}
+  .pg-lbl{font-size:13.5px}
+  .pg-lbl small{font-size:11.5px}
+  .pg-rate em{font-size:23px}
+  .pg-frac{width:196px;font-size:12px}
+  .pg-bar{width:220px;height:6px}
+  .mx thead th{height:46px;font-size:11px}
+  .mx thead th b{font-size:12.5px}
+  .mx-heat tbody tr{height:36px}
+  .hcell{height:36px;font-size:12.5px}
+  .hl-nm{font-size:12.5px}
+  .lbc span{font-size:13px}
+  .mx-ladder td.lbl b{font-size:14.5px}
+  .mx-note{font-size:12.5px;padding:13px 20px}
+  .kp-hd .nm{font-size:15px}
+  .kp-hd .px{font-size:15px}
+}
+
+/* ---- 4K（3840×2160）：继续按比例放大，否则 4K 下会像"小页面浮在大片留白里" ---- */
+@media(min-width:3000px){
+  body{font-size:17px}
+  .app{max-width:3480px;grid-template-columns:536px minmax(0,1fr);gap:26px;padding:26px}
+  .c-date{width:158px}
+  .c-idx{width:134px}
+  .c-amt{width:138px}
+  .c-fund{width:146px}
+  .c-cnt{width:150px}
+  .c-br{width:168px}
+  .c-mood{width:148px}
+  .detail{padding:24px 26px}
+  .d-ym{font-size:23px}
+  .d-week{font-size:13px}
+  .d-duo{gap:22px;margin-top:20px}
+  .dd-block{padding:16px 0}
+  .dd-block--last{padding:16px 0 0}
+  .card-label{font-size:12px;margin-bottom:17px}
+  .sent-num b,.turn-main b{font-size:39px}
+  .mspark{height:34px;min-height:34px}
+  .yp-strip{padding:10px 14px;margin-top:14px}
+  .yp-lb{font-size:11.5px}
+  .yp-i b{font-size:16px}
+  .idx-item{padding:11px 13px 10px}
+  .idx-name{font-size:12.5px}
+  .idx-val{font-size:17.5px}
+  .idx-pct{font-size:14px}
+  .br-cell{padding:13px 9px}
+  .br-cell b{font-size:20px}
+  .br-cell label{font-size:11.5px}
+  .cc-list{gap:11px}
+  .cc-name,.cc-pct{font-size:15.5px}
+  .tab{height:40px;padding:0 21px;font-size:15.5px}
+  .nav-arrow{width:38px;height:46px}
+  .date-picker{min-width:240px;height:46px}
+  .dp-text b{font-size:15.5px}
+  .dp-text small{font-size:11.5px}
+  .table{min-width:1280px}
+  .table thead th{height:52px;font-size:12.5px}
+  .table tbody td{font-size:19px}
+  .d-cell b{font-size:18px}
+  .d-cell span{font-size:13px}
+  .idx-c>span,.amt-c .av,.mood-c b,.fund-c .fv{font-size:18.5px}
+  .cnt{font-size:18px}
+  .cstack>small{font-size:13px}
+  .amt-c .ad{font-size:12.5px}
+  .idx-c small{font-size:12.5px}
+  .concept-tags em{font-size:14.5px;max-width:180px;padding:5px 11px}
+  .concept-tags em{font-size:14px;max-width:168px;padding:5px 11px}
+  .concept-tags em i{font-size:11.5px}
+  .pcard{height:58px}
+  .pcard .nb{font-size:15px}
+  .pcard .tg{font-size:12px}
+  .pcard .st{font-size:11.5px}
+  .pg-cards{grid-template-columns:repeat(auto-fill,minmax(172px,1fr));gap:9px}
+  .pg-head{padding:17px 28px}
+  .pg-tier-hd{padding:16px 28px 13px}
+  .pg-lbl{font-size:15px}
+  .pg-lbl small{font-size:12.5px}
+  .pg-rate{width:88px}
+  .pg-rate em{font-size:26px}
+  .pg-frac{width:224px;font-size:13.5px}
+  .pg-bar{width:250px;height:7px}
+  .pg-legend{font-size:12.5px}
+  .mx thead th{height:52px;font-size:12px}
+  .mx thead th b{font-size:14px}
+  .mx thead th small{font-size:10.5px}
+  .mx-heat tbody tr{height:41px}
+  .hcell{height:41px;font-size:14px}
+  .hl-nm{font-size:14px}
+  .hl-rk{font-size:11px}
+  .lbc span{font-size:14px}
+  .mx-ladder td.lbl b{font-size:16px}
+  .mx-ladder td.lbl small{font-size:11px}
+  .mx-note{font-size:13.5px;padding:15px 22px}
+  .mx-ladder thead th.lbl{width:110px}
+  .mx-heat thead th.lbl{width:184px}
+  .kp-hd{padding:13px 16px 11px}
+  .kp-hd .nm{font-size:17px}
+  .kp-hd .px{font-size:17px}
+  .kp-hd .cd{font-size:12px}
+}
+
+/* ============ 无障碍 / 细节打磨（统一追加，避免散落在各处） ============ */
+/* 之前只有 tab 与表格行有焦点环，导航箭头、卡片、筛选按钮用键盘走过完全看不到位置 */
+button:focus-visible,a:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.table tbody tr:focus-visible{outline:2px solid var(--ac);outline-offset:-2px}
+.pcard:focus-visible{outline-offset:1px}
+/* 概念标签的 +N 由 JS 控制显隐，需要显式压过 .concept-tags em.more 的 display */
+.concept-tags em.more[hidden]{display:none}
+.concept-tags em[hidden]{display:none}
+/* Firefox 没有 -webkit-scrollbar，补一份 */
+*{scrollbar-color:#CBD5E1 transparent;scrollbar-width:thin}
+/* 减少动态效果：尊重系统设置，别让"精致"变成"晃眼" */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
+  .boot{transition:none}
+}
+/* 晋级梯队整行 hover：宽屏下「晋级率」离梯队名很远，行高亮把它和左侧标签绑在一起 */
+.pg-tier{transition:background .15s var(--ease)}
+.pg-tier:hover{background:#FAFCFF}
+/* 天梯表脚标签原来是「最高板 / 连板家数」，94px 里折成两行，改成七字；
+   列宽 108→96：比默认 94 略宽保证表脚不折行，又不至于挤占日期列 */
+.mx-ladder thead th.lbl{width:96px}
+/* 板数列文字居中：表头「连板高度」与行头「X 板 / N 只」跟日期列的居中表头呼应 */
+.mx-ladder thead th.lbl{text-align:center;padding-left:4px}
+.mx-ladder td.lbl{text-align:center;padding:0 4px}
+/* 表脚「最高板 / 家数」整行（含行头）水平 + 垂直居中；
+   .mx-ladder td{vertical-align:top} 会盖住 tfoot 的默认居中，这里显式覆盖 */
+.mx-ladder tfoot td,.mx-ladder tfoot th{vertical-align:middle;text-align:center}
+.mx-ladder tfoot td.lbl,.mx-ladder tfoot th.lbl{text-align:center;padding-left:4px}
+
+/* 左栏页脚：1440 下热门题材下面空着约 80px，补一行真实信息比留白更像成品 */
+/* 矮屏优先保证内容，页脚让位 */
+
+
+/* 高屏（1080p 及以上）：内容只有这么点，靠加大节奏把留白摊开，
+   否则热门题材下面会空出近 200px，像少写了一块。 */
+@media(min-width:961px) and (min-height:1000px){
+  .dd-block{padding:15px 0}
+  .dd-block--last{padding:15px 0 0}
+  .card-label{margin-bottom:15px}
+  .cc-list{gap:9px}
+  .cc-list li{padding:2px 0}
+  .idx-item{padding:9px 11px}
+  .br-cell{padding:9px 7px}
+  .br-cell label{margin-bottom:5px}
+  .d-duo{margin-top:14px}
+  .yp-strip{margin-top:10px;padding:8px 11px}
+  .fund-strip{margin-top:10px;padding:9px 11px}
+  .fund-split{margin-top:7px}
+  .sent-spark{margin-top:8px}
+  .br-legend{margin-top:10px}
+  .br-grid{margin-top:12px}
+}
+
+/* ---- 移动端：左栏折叠成一条摘要，先看到数据再决定要不要看详情 ---- */
+.d-toggle{display:none;align-items:center;gap:3px;margin-left:auto;height:24px;padding:0 9px;border:1px solid var(--bd2);border-radius:20px;background:var(--card);color:var(--tx2);font-size:10.5px;font-weight:600;font-family:var(--ff);cursor:pointer;flex:none}
+.d-toggle svg{width:11px;height:11px;transition:transform .18s var(--ease)}
+.d-toggle[aria-expanded="true"] svg{transform:rotate(180deg)}
+/* 分隔线改用「1px 网格缝 + 容器底色」，而不是 .mi+ .mi 的 border-left：
+   格子数从 4 变 5、窄屏再变 2 列时，per-item 边框会漏出多余竖线或缺口，
+   靠缝线则任何排布都自动对齐。 */
+.d-mini{display:none;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;margin-top:10px;border:1px solid var(--bd);border-radius:var(--r-md);background:var(--line);overflow:hidden}
+.d-mini .mi{padding:8px 4px 7px;text-align:center;min-width:0;background:var(--card-2)}
+.d-mini label{display:block;font-size:9.5px;font-weight:600;color:var(--tx3);margin-bottom:2px;white-space:nowrap;letter-spacing:.02em}
+.d-mini b{display:block;font-size:13.5px;font-weight:var(--w-hero);font-variant-numeric:tabular-nums;letter-spacing:-.012em;white-space:nowrap;line-height:1.2}
+.d-mini b small{font-size:9.5px;font-weight:600;color:var(--tx3);margin-left:2px;letter-spacing:0}
+
+/* 概念热度色阶图例：原文案只说"越深越热"，没给量级参照 */
+.mx-scale{display:inline-flex;align-items:center;gap:5px;font-size:9.5px;color:var(--tx3);font-weight:600;letter-spacing:.02em}
+.mx-scale i{display:block;width:46px;height:7px;border-radius:3px;background:linear-gradient(90deg,rgba(220,38,38,.05),rgba(220,38,38,.34))}
+.mx-scale em{font-style:normal}
+/* 图例与筛选、时间范围挤在一行：让筛选靠右成组，范围贴在最右 */
+.mx-note .mx-filter{margin-left:auto}
+.mx-note .mx-range{margin-left:0}
+
+/* 悬浮卡片遮罩：只在触屏/窄屏弹层时出现 */
+.kp-bd{position:fixed;inset:0;z-index:79;background:rgba(15,23,42,.34);opacity:0;transition:opacity .18s var(--ease);pointer-events:none;backdrop-filter:blur(1.5px)}
+.kp-bd.on{opacity:1;pointer-events:auto}
+@media(max-width:960px){
+  .d-toggle{display:inline-flex}
+  .d-mini{display:none}
+  .detail.is-mini .d-mini{display:grid}
+  .detail.is-mini .d-duo,.detail.is-mini .yp-strip,.detail.is-mini .fund-strip,
+  .detail.is-mini .dd-block{display:none}
+  /* 窄屏改成底部卡片：固定宽度贴边会左右溢出，居中也便于单手关闭 */
+  .kp{width:calc(100vw - 24px) !important;max-width:440px;left:50% !important;top:auto !important;
+      bottom:calc(12px + env(safe-area-inset-bottom,0px)) !important;transform:translate(-50%,14px);
+      border-radius:16px}
+  .kp.on{transform:translate(-50%,0)}
+  .toast{bottom:calc(18px + env(safe-area-inset-bottom,0px))}
+  /* 手机上说明文字占满一行，色阶图例和筛选一起掉到第二行并右对齐，别散成两处 */
+  .mx-note .mx-scale{margin-left:auto}
+  /* 手机上主表 980px 宽必然横向滚动，卡片右缘硬切像"被裁掉"。
+     在不会滚动的 .tabpane 上叠一层贴边阴影，提示"右边还有内容"。 */
+  .tabpane{position:relative}
+  #pane-daily::after{content:"";position:absolute;top:0;right:0;width:22px;height:100%;pointer-events:none;
+    border-radius:0 12px 12px 0;z-index:8;
+    background:linear-gradient(to left,rgba(15,23,42,.10),rgba(15,23,42,0))}
+}
+
+/* ============ 手机端（≤719px）：只留复盘卡 ============
+   桌面是「左详情 + 右四页数据」的双栏。手机上这个结构不成立：主表 980px 宽
+   必然横向滚动、一屏只能看到两列；涨停晋级/连板天梯/概念热度本来也是宽屏阅读的材料。
+   所以手机改成单栏，只显示复盘卡本身，日期控件并入卡头并吸顶，另外两个入口
+   （作者官网、电脑视图）沉到卡底。
+   **所有规则都挂在 `html:not(.pc-view)` 下**——「电脑视图」就是靠去掉这个前缀，
+   把 ≤960 那套堆叠布局原样复原出来的，别再往里加无条件选择器。 */
+.ph-foot{display:none;gap:8px;padding:12px 0 4px;border-top:1px solid var(--line);margin-top:2px}
+.ph-btn{flex:1;height:36px;border:1px solid var(--bd);border-radius:9px;background:var(--card-2);
+  color:var(--tx2);font-family:var(--ff);font-size:12px;font-weight:700;letter-spacing:.01em;
+  cursor:pointer;transition:.16s var(--ease)}
+.ph-btn:active{background:#EDF1F7}
+/* 注意：这个按钮**不能**给 .tab 类——.tab 会被 activateTab 当成数据页，dataset.tab 为空会直接报错 */
+.ph-back{display:none;align-items:center;height:30px;padding:0 12px;border:1px solid var(--bd);
+  border-radius:8px;background:var(--card);color:var(--tx2);font-family:var(--ff);font-size:12.5px;
+  font-weight:600;cursor:pointer;flex:none}
+@keyframes dpUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+@media(max-width:719px){
+  html:not(.pc-view) .app{display:block;padding:10px;height:auto}
+  /* overflow 必须放开：.detail 原本是纵向滚动容器，会让它的吸顶子元素失效。
+     animation 也必须关掉：`rise` 收尾保留了 transform，会给 fixed 子元素造一个新的
+     包含块（日历曾经因此被定位到卡片末尾、跑到首屏外）。
+     --dd-x 是卡片左右内边距，**日期行吸顶出血的负 margin 必须严格等于它**（见下）。 */
+  html:not(.pc-view) .detail{overflow:visible;max-height:none;padding:0 12px 6px;border-radius:12px;
+    --dd-x:12px;animation:none}
+  html:not(.pc-view) .tabbar,
+  html:not(.pc-view) .panel{display:none}
+
+  /* 卡头第一行：日期控件吸顶，滚到哪儿都能换交易日。
+     出血用 `margin:0 calc(0px - var(--dd-x))`——负值**必须正好等于卡片内边距**：
+        - 少了，吸顶时内容会从卡片内边距那一条缝里滑出来；
+        - 多了（之前写成 -13px，而内边距后来改成了 12px），白底会盖掉卡片那 1px 边框，
+          于是「日期行」两侧没边、分隔线以下又有边，看着就是上面那一行比下面的面板宽出去一点。
+     分隔线同理不能用 border-bottom（会从卡片边缘画到边缘，和下方「两市成交额」的左右边界
+     错开），改用伪元素按同一个 --dd-x 内缩，正好与下方内容的左右边界重合。 */
+  html:not(.pc-view) .d-date-row{position:sticky;top:0;z-index:25;
+    margin:0 calc(0px - var(--dd-x,12px));
+    padding:10px var(--dd-x,12px) 9px;background:var(--card);border-radius:12px 12px 0 0;gap:7px}
+  html:not(.pc-view) .d-date-row::after{content:"";position:absolute;
+    left:var(--dd-x,12px);right:var(--dd-x,12px);
+    bottom:0;height:1px;background:var(--line);pointer-events:none}
+  html:not(.pc-view) .d-date-row .date-nav{flex:1;width:auto;min-width:0}
+  html:not(.pc-view) .d-date-row .nav-arrow{height:34px;width:32px}
+  html:not(.pc-view) .d-date-row .date-picker{height:34px;min-width:0}
+  /* 日期/星期/「昨日」已经在日期控件里（dpWeek 就是「星期五 · 昨日」），不再重复一遍 */
+  html:not(.pc-view) .d-dt,
+  html:not(.pc-view) .d-badge,
+  html:not(.pc-view) .back-today,
+  html:not(.pc-view) .d-toggle{display:none}
+  html:not(.pc-view) .d-head{padding-bottom:10px;border-bottom:0}
+
+  html:not(.pc-view) .ph-foot{display:flex}
+
+  /* 日期控件内容横向居中：图标与箭头绝对定位到两侧，文字占满整行居中。
+     盒子宽度由两侧箭头决定，图标/箭头若留在流里，文字会被挤得偏左。 */
+  html:not(.pc-view) .d-date-row .date-picker{position:relative;justify-content:center}
+  html:not(.pc-view) .d-date-row .dp-icon{position:absolute;left:9px;top:9px;width:16px;height:16px}
+  html:not(.pc-view) .d-date-row .dp-text{flex:1;align-items:center;text-align:center;padding:0 30px}
+  html:not(.pc-view) .d-date-row .dp-chev{position:absolute;right:10px;top:50%;margin:-6.5px 0 0}
+
+  /* 日历贴着被点的按钮下方展开（原先是底部抽屉，要低头看屏幕最下方，离手指十万八千里）。
+     用 50% + 负半宽居中而不用 transform，避免和 dpIn 动画的 transform 打架 */
+  html:not(.pc-view) .dp-pop{position:absolute;top:calc(100% + 6px);left:50%;right:auto;bottom:auto;
+    width:266px;margin-left:-133px;max-height:none;overflow:visible;
+    border-radius:12px;animation:dpIn .14s var(--ease)}
+
+}
+/* ============ 手机版排版（≤719px 且非「电脑视图」）============
+   重新定的信息层级，从「上一版是桌面左栏直接竖着堆下来」改成按手机阅读重排：
+     1) 成交额 / 情绪 合成一组**并排双栏 KPI**——两者是同一层级的「今天怎么样」，
+        各占一整行会白白浪费半行宽度（右侧大片空白），还得多滚一屏；
+     2) 主力净流入单独一条细横条，不再用带边框的大盒子；
+     3) 核心指数 3×2（一行 3 个），从 3 行压成 2 行，省 ~70px；
+     4) 分时图压到 130px 并保留——它是「点卡片换指数」这个交互的产出；
+     5) 市场广度四格回到一行，昨日涨停表现仍是四栏。
+   所有规则都挂在 `html:not(.pc-view)` 下：点「电脑视图」要能完整回到桌面版式。
+   这里的选择器特异性都高于 ≤560 那档的 `.d-duo{1fr}` / `.idx-grid{1fr 1fr}` / `.br-grid{2 列}`。 */
+@media(max-width:719px){
+  html:not(.pc-view) .detail{padding:0 12px 8px}
+  html:not(.pc-view) .dd-block{padding:12px 0}
+  html:not(.pc-view) .dd-block--last{padding:12px 0 0}
+  html:not(.pc-view) .card-label{margin-bottom:9px}
+
+  /* ---- 成交额 / 情绪：双栏 ---- */
+  html:not(.pc-view) .d-duo{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0;margin-top:10px}
+  html:not(.pc-view) .duo-cell:first-child{padding-right:11px}
+  html:not(.pc-view) .duo-cell+.duo-cell{padding-left:11px;margin-top:0;border-left:1px solid var(--line)}
+  html:not(.pc-view) .duo-cell .card-label{font-size:10.5px;letter-spacing:.02em}
+  html:not(.pc-view) .turn-main{gap:3px}
+  html:not(.pc-view) .turn-main b{font-size:23px}
+  html:not(.pc-view) .turn-main span{font-size:10.5px}
+  html:not(.pc-view) .turn-delta{margin-top:6px;padding:4px 7px;gap:2px 5px;border-radius:6px;font-size:10.5px}
+  html:not(.pc-view) .turn-delta .dpct{font-size:10px;padding:0 4px}
+  html:not(.pc-view) .turn-delta .streak{font-size:9.5px}
+  html:not(.pc-view) .sent-main{gap:3px}
+  html:not(.pc-view) .sent-num b{font-size:23px}
+  html:not(.pc-view) .sent-tag{font-size:9.5px;padding:1px 5px;flex:none}
+  html:not(.pc-view) .mood-delta{font-size:10px}
+  html:not(.pc-view) .sent-spark{gap:6px;padding-bottom:2px}
+  html:not(.pc-view) .mspark{height:22px;min-height:22px;gap:1.5px}
+  html:not(.pc-view) .sent-rank{font-size:9.5px}
+
+  /* ---- 主力净流入：细横条 ---- */
+  html:not(.pc-view) .fund-strip{margin-top:9px;padding:7px 10px}
+  html:not(.pc-view) .fund-num{font-size:15px}
+  html:not(.pc-view) .fund-split{gap:5px;margin-top:5px}
+  html:not(.pc-view) .fs{padding:2px 7px}
+  html:not(.pc-view) .fs b{font-size:11.5px}
+
+  /* ---- 核心指数 3×2 ---- */
+  html:not(.pc-view) .idx-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+  html:not(.pc-view) .idx-item{padding:5px 6px;border-radius:7px}
+  html:not(.pc-view) .idx-name{font-size:9.5px}
+  html:not(.pc-view) .idx-val{font-size:12.5px}
+  html:not(.pc-view) .idx-pct{font-size:10px;gap:2px}
+  html:not(.pc-view) .idx-pct i{font-size:8.5px}
+  /* 标题行：设置按钮保留 44px 可点热区，但视觉尺寸回到 24px。
+     若直接给 .idx-set 写 min-height:44px，22px 的按钮会撑到 44px，
+     连同自身 margin-bottom:5px 把整行顶到 49px，标题两侧全是空白。
+     热区改用伪元素外扩，不影响布局高度；标题的 9px 下边距在这里要显式归零
+     （html:not(.pc-view) .card-label 的特异性高于 .idx-head .card-label）。 */
+  html:not(.pc-view) .idx-head{margin-bottom:6px}
+  html:not(.pc-view) .idx-head .card-label{margin-bottom:0}
+  html:not(.pc-view) .idx-set{position:relative;min-height:0;height:24px;
+    padding:0 8px;margin-bottom:0}
+  html:not(.pc-view) .idx-set::after{content:"";position:absolute;
+    left:50%;top:50%;width:44px;height:44px;transform:translate(-50%,-50%)}
+
+  /* 设置弹层：手机上换成**整块底部抽屉**。
+     上一版把 max-height 和滚动都放在整个抽屉上，列表一长「完成」就跟着滚到屏幕外，
+     用户以为按钮被吞了。现在抽屉自己是一列 flex：头部与底部按钮 flex:none 固定，
+     只有中间的候选列表滚动，11 行以内一屏放得下、放不下也一定能看到「完成」。
+     高度用 top 留出吸顶日期条的 64px，其余撑满——比 74vh 高，也避开浏览器工具栏
+     （dvh 跟随可见视口变化，旧内核回落到 vh）。 */
+  html:not(.pc-view) .idx-pop{position:fixed;left:0;right:0;top:auto;width:auto;
+    bottom:0;display:flex;flex-direction:column;
+    max-height:calc(100vh - 64px);max-height:calc(100dvh - 64px);
+    padding:10px 16px calc(12px + env(safe-area-inset-bottom,0px));
+    border-radius:16px 16px 0 0;animation:dpUp .2s var(--ease);
+    box-shadow:0 0 0 100vmax rgba(13,21,38,.36),0 -8px 30px -12px rgba(13,21,38,.35)}
+  /* display:flex 会盖掉 [hidden]，必须显式压回去 */
+  html:not(.pc-view) .idx-pop[hidden]{display:none}
+  /* 抓手条：告诉用户「这是可以往上推/往下收的抽屉」 */
+  html:not(.pc-view) .idx-pop::before{content:"";flex:none;align-self:center;
+    width:36px;height:4px;border-radius:2px;background:#D5DDE8;margin:0 0 10px}
+  html:not(.pc-view) .idx-pop .ip-hd{flex:none;padding-bottom:10px}
+  html:not(.pc-view) .idx-pop .ip-hd b{font-size:14px}
+  html:not(.pc-view) .idx-pop .ip-hd small{font-size:10.5px}
+  /* 列表：唯一可滚动的部分，min-height:0 是 flex 子里能滚的前提 */
+  html:not(.pc-view) .idx-pop .ip-list{flex:1 1 auto;min-height:0;max-height:none;
+    overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+  html:not(.pc-view) .idx-pop .ip-row{padding:7px 4px}
+  html:not(.pc-view) .idx-pop .ip-row .nm{font-size:13px}
+  html:not(.pc-view) .idx-pop .ip-row .mk{font-size:10px}
+  html:not(.pc-view) .idx-pop .ip-row .ord{font-size:10.5px;width:14px}
+  html:not(.pc-view) .idx-pop .ip-row input{width:18px;height:18px}
+  html:not(.pc-view) .idx-pop .ip-row label{gap:9px}
+  html:not(.pc-view) .idx-pop .mv{gap:4px}
+  html:not(.pc-view) .idx-pop .mv button{width:30px;height:28px;font-size:13px}
+  html:not(.pc-view) .idx-pop .ip-ft{flex:none;margin-top:10px;padding-top:10px;
+    border-top:1px solid var(--line);background:var(--card)}
+  html:not(.pc-view) .idx-pop .ip-ft .cnt{font-size:11.5px}
+  html:not(.pc-view) .idx-pop .ip-btns button{height:36px;padding:0 16px;font-size:13px}
+
+  /* ---- 分时图在手机端整块不出现（连数据都不请求，逻辑见 MIN.render）---- */
+  html:not(.pc-view) #dMiniWrap,
+  html:not(.pc-view) .mini-empty{display:none!important}
+
+  /* ---- 市场广度 ---- */
+  html:not(.pc-view) .br-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin-top:7px}
+  html:not(.pc-view) .br-cell{padding:5px 3px}
+  html:not(.pc-view) .br-cell label{font-size:9.5px}
+  html:not(.pc-view) .br-cell b{font-size:14px}
+  html:not(.pc-view) .br-legend{gap:3px 10px;margin-top:6px;font-size:10.5px}
+  html:not(.pc-view) .yp-strip{gap:6px;margin-top:7px;padding:6px 8px}
+  html:not(.pc-view) .yp-lb{font-size:9.5px}
+  html:not(.pc-view) .yp-lb small,
+  html:not(.pc-view) .yp-i small{font-size:9px}
+  html:not(.pc-view) .yp-i b{font-size:12px}
+
+  /* ---- 热门题材：两列，名称超长省略 ---- */
+  html:not(.pc-view) .cc-list{gap:5px 12px}
+  html:not(.pc-view) .cc-name{font-size:11.5px}
+  html:not(.pc-view) .cc-pct{font-size:11px}
+
+  /* 底部按钮避开 iPhone home indicator */
+  html:not(.pc-view) .ph-foot{padding-bottom:calc(4px + env(safe-area-inset-bottom,0px))}
+
+  /* ---- UI 巡检加固：安全区 / 触控热区 / 移动端可读性（2026-11-22）---- */
+  html:not(.pc-view) .app{
+    padding-left:max(10px,env(safe-area-inset-left,0px));
+    padding-right:max(10px,env(safe-area-inset-right,0px))}
+  html:not(.pc-view) .d-date-row{top:env(safe-area-inset-top,0px)}
+  /* 触控热区：导航、日期、tab、弹层按钮、复制条统一 ≥44px */
+  html:not(.pc-view) .nav-arrow,
+  html:not(.pc-view) .date-picker,
+  html:not(.pc-view) .tab,
+  html:not(.pc-view) .ph-btn,
+  html:not(.pc-view) .ph-back,
+  html:not(.pc-view) .fb-submit,
+  html:not(.pc-view) .tipm-go,
+  html:not(.pc-view) .tipm-no,
+  html:not(.pc-view) .tipm-x,
+  html:not(.pc-view) .d-toggle,
+  html:not(.pc-view) .pg-more,
+  html:not(.pc-view) .tp-btns button,
+  html:not(.pc-view) .idx-pop .ip-btns button{min-height:44px}
+  html:not(.pc-view) .mp-nav{width:44px;height:44px}
+  html:not(.pc-view) .dp-day{height:44px}
+  html:not(.pc-view) .dp-nav{width:44px;height:44px}
+  html:not(.pc-view) .idx-pop .mv button{width:44px;height:44px}
+  html:not(.pc-view) .idx-pop .ip-row{min-height:44px}
+  html:not(.pc-view) .idx-pop .ip-row input{width:20px;height:20px}
+  /* 移动端辅助字号 12px 下限 */
+  html:not(.pc-view) .idx-name,
+  html:not(.pc-view) .br-cell label,
+  html:not(.pc-view) .d-mini label,
+  html:not(.pc-view) .sent-tag,
+  html:not(.pc-view) .sent-rank,
+  html:not(.pc-view) .yp-lb,
+  html:not(.pc-view) .yp-lb small,
+  html:not(.pc-view) .yp-i small,
+  html:not(.pc-view) .mx-scale{font-size:12px;line-height:1.45}
+  /* 弹层打开时背景不滚动 */
+  html.modal-open,html.modal-open body{overflow:hidden;touch-action:none}
+  /* 触屏没有 hover，按压缩放才是正确反馈 */
+  @media(hover:none){
+    .tab:active,.nav-arrow:active,.ph-btn:active,.idx-item:active{
+      transform:scale(.97);filter:brightness(.96)}
+  }
+}
+@media(max-width:390px){
+  html:not(.pc-view) .app{padding:8px}
+  html:not(.pc-view) .detail{padding:0 10px 6px;--dd-x:10px}
+  html:not(.pc-view) .idx-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  html:not(.pc-view) .br-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  html:not(.pc-view) .d-mini{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .toast{white-space:normal;max-width:calc(100vw - 32px)}
+}
+@media(max-width:719px){
+  html.pc-view .ph-back{display:inline-flex}
+}
+</style>
+</head>
+<body>
+<div class="boot" id="boot" role="status" aria-live="polite"><div class="boot-spin" id="bootSpin"></div><div id="bootText">正在加载复盘数据…</div></div>
+<div class="toast" id="toast" role="alert" aria-live="assertive"></div>
+<div class="app">
+  <!-- LEFT: 常驻详情 -->
+  <aside class="detail" id="detail" aria-label="当日详情">
+    <div class="d-head">
+      <div class="d-date-row">
+        <div class="d-dt">
+          <b class="d-ym" id="dYM">2026年11月19日</b>
+          <span class="d-week" id="dWeek">星期四</span>
+        </div>
+        <!-- 文案由 newestLabel() 在渲染时写入（今日/昨日/上一交易日），静态占位不写「今日」以免首帧说错 -->
+        <span class="d-badge today" id="dBadge">—</span>
+        <button class="back-today" id="backToday" hidden>回到最新</button>
+        <button class="d-toggle" id="detailToggle" type="button" aria-expanded="false"><span>详情</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+      </div>
+      <!-- 窄屏摘要：默认折叠，首屏就能看到右侧数据，而不是先滚两屏详情 -->
+      <div class="d-mini" id="dMini">
+        <div class="mi"><label>成交额</label><b id="mAmt">—</b></div>
+        <div class="mi"><label>情绪</label><b id="mMood">—</b></div>
+        <div class="mi"><label>涨停/跌停</label><b id="mZT">—</b></div>
+        <div class="mi"><label>最高板</label><b id="mLB">—</b></div>
+      </div>
+      <div class="d-duo">
+        <div class="duo-cell">
+          <div class="card-label">两市成交额</div>
+          <div class="turn-main"><b id="dAmt">1.31</b><span id="dAmtUnit">万亿</span></div>
+          <div class="turn-delta" id="dAmtDelta"></div>
+        </div>
+        <div class="duo-cell" id="dMoodCell">
+          <div class="card-label">市场情绪</div>
+          <div class="na-mood">暂无数据</div>
+          <div class="sent-main"><div class="sent-num"><b id="dMood" title="0–65 分：涨停家数 + 红盘率加权，描述当日普涨程度">50</b></div><div class="sent-tag" id="dMoodTag">震荡</div><span class="mood-delta" id="dMoodDelta"></span></div>
+          <div class="sent-spark">
+            <div class="mspark" id="dMoodSpark" role="img" aria-label="近 5 个交易日情绪分"></div>
+            <span class="sent-rank" id="dMoodRank">—</span>
+          </div>
+        </div>
+      </div>
+      <div class="fund-strip" id="dFundStrip">
+        <div class="fund-top"><span class="fl">主力净流入<small>全市场</small></span><span class="fund-num" id="dFund">—</span></div>
+        <div class="fund-split">
+          <span class="fs"><label>超大单</label><b id="dSuper">—</b></span>
+          <span class="fs"><label>大单</label><b id="dBig">—</b></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="dd-block" id="dIdxBlock">
+      <div class="idx-head">
+        <div class="card-label">核心指数</div>
+        <button class="idx-set" id="idxSetBtn" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="idxPop" title="自定义显示哪 6 个指数及顺序">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+          设置
+        </button>
+      </div>
+      <div class="idx-grid" id="dIndices"></div>
+      <!-- 选中的指数分时：点卡片切换，默认上证指数；无数据日显示等高占位 -->
+      <div id="dMiniWrap" hidden><div class="mini-cap" id="dMiniCap"></div><div class="mini-chart" id="dMiniChart"></div></div>
+      <div class="mini-empty" id="dMiniEmpty" hidden><b>该交易日分时暂未收录</b><span>分时自上线起逐日积累，更早的日期可能缺失</span></div>
+      <div class="idx-pop" id="idxPop" role="dialog" aria-label="自定义核心指数" hidden></div>
+    </div>
+
+    <div class="dd-block" id="dBreadthBlock">
+      <div class="card-label">市场广度</div>
+      <div class="br-bar" id="brBar"><i class="su" id="dSegU"></i><i class="sf" id="dSegF"></i><i class="sd" id="dSegD"></i></div>
+      <div class="br-legend"><span><i class="br-dot" style="background:var(--up)"></i>上涨<b id="dUp">-</b></span><span><i class="br-dot" style="background:#B4BECB"></i>平盘<b id="dFlat">-</b></span><span><i class="br-dot" style="background:var(--dn)"></i>下跌<b id="dDown">-</b></span></div>
+      <div class="br-grid">
+        <div class="br-cell"><label>涨停</label><b class="up" id="dZT">-</b></div>
+        <div class="br-cell"><label>跌停</label><b class="down" id="dDT">-</b></div>
+        <div class="br-cell"><label>炸板率</label><b id="dZB">-<small>%</small></b></div>
+        <div class="br-cell"><label>最高连板</label><b id="dLB">-<small>板</small></b></div>
+      </div>
+      <!-- 昨日涨停今日表现（赚钱效应）：打板决策的第一指标，压在广度区最底部，
+           和上面的涨跌家数、涨跌停家数同属"市场温度"一组，不再单独占头部位置 -->
+      <div class="yp-strip" id="dYP">
+        <span class="yp-lb">昨日涨停<small>今日表现</small></span>
+        <span class="yp-i"><b id="dYPAvg">—</b><small>平均涨幅</small></span>
+        <span class="yp-i"><b id="dYPRed">—</b><small>红盘 / 总数</small></span>
+        <span class="yp-i"><b id="dYPPromo">—</b><small>继续封板</small></span>
+      </div>
+      <div class="na-note" id="dNaNote" hidden><i class="ni">i</i><div class="nt">
+        <b>该交易日暂未收录涨停族数据</b><br>
+        <span class="avail">已收录</span>：核心指数<span id="dNaAmtTxt">、两市成交额</span><span id="dNaFund"></span>；
+        涨停/跌停、情绪、连板、题材为行情推导口径，自 1996-12-16 涨跌停制度确立后才有，此前无源。
+      </div></div>
+      <div class="na-note derived-note" id="dDerivedNote" hidden><i class="ni">i</i><div class="nt">
+        <b>当日涨停族为「行情推导」口径</b><br>
+        <span class="avail">真实采集</span>：核心指数、两市成交额；
+        <span class="avail2">行情推导</span>：涨停/跌停/炸板、涨跌家数、情绪分、连板、昨涨停今表现——由全市场个股日线按涨跌停价规则计算；
+        <span class="avail2">题材聚类</span>：按概念板块成分与当日涨停股统计，<b>非当日真实涨停原因</b>；开源版仅内置最近 30 个交易日数据。
+      </div></div>
+    </div>
+
+    <div class="dd-block dd-block--last" id="dConceptBlock">
+      <div class="card-label" id="dConceptLabel">热门题材 · 涨停家数 Top 4</div>
+      <ol class="cc-list" id="dConcepts"></ol>
+    </div>
+
+    <!-- 仅手机端显示：电脑视图下这两栏本来就在，不需要入口 -->
+    <div class="ph-foot" id="phFoot">
+      <a class="ph-btn" href="https://www.3x1.cn" target="_blank" rel="noopener noreferrer">作者官网</a>
+      <button type="button" class="ph-btn" id="phPc">电脑视图 ›</button>
+    </div>
+  </aside>
+
+  <!-- RIGHT: tabs -->
+  <section class="right">
+    <div class="tabbar">
+      <div class="tabs" role="tablist" aria-label="视图切换">
+        <button class="tab active" data-tab="daily" role="tab" tabindex="0" aria-selected="true" aria-controls="pane-daily" id="tab-daily">每日数据</button>
+        <button class="tab" data-tab="promo" role="tab" tabindex="-1" aria-selected="false" aria-controls="pane-promo" id="tab-promo">涨停晋级</button>
+        <button class="tab" data-tab="ladder" role="tab" tabindex="-1" aria-selected="false" aria-controls="pane-ladder" id="tab-ladder">连板天梯</button>
+        <button class="tab" data-tab="heat" role="tab" tabindex="-1" aria-selected="false" aria-controls="pane-heat" id="tab-heat">概念热度</button>
+      </div>
+      <span class="spacer"></span>
+      <!-- 仅在「手机宽度 + 电脑视图」时出现，用来退回单栏卡片 -->
+      <button class="ph-back" id="phBack" type="button">手机版</button>
+      <!-- 作者官网：外链，不参与复盘视图切换 -->
+      <a class="tab-site" href="https://www.3x1.cn" target="_blank" rel="noopener noreferrer" aria-label="访问作者官网（新窗口）">作者官网 ↗</a>
+      <div class="date-nav">
+        <button class="nav-arrow" id="navPrev" aria-label="上一交易日"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+        <div class="date-picker-wrap">
+          <button class="date-picker" id="datePicker" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="dpPop" aria-label="选择交易日">
+            <span class="dp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span>
+            <span class="dp-text"><b id="dpDate">-</b><small id="dpWeek">-</small></span>
+            <svg class="dp-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="dp-pop" id="dpPop" role="dialog" aria-label="日历选择交易日" hidden></div>
+        </div>
+        <button class="nav-arrow" id="navNext" aria-label="下一交易日"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg></button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <!-- Tab1 每日数据 -->
+      <div class="tabpane active" id="pane-daily" role="tabpanel" tabindex="0" aria-labelledby="tab-daily">
+        <div class="tbl-card">
+        <div class="table-wrap" id="tableWrap">
+          <table class="table">
+            <colgroup>
+              <col class="c-date">
+              <col class="c-idx"><col class="c-idx"><col class="c-idx">
+              <col class="c-amt"><col class="c-fund">
+              <col class="c-br"><col class="c-cnt">
+              <col>
+              <col class="c-mood">
+            </colgroup>
+            <thead><tr>
+              <th>交易日期</th><th class="r">上证指数</th><th class="r">深证成指</th><th class="r">创业板指</th>
+              <th class="r">两市成交额</th>
+              <th class="r">主力净流入</th>
+              <th class="r">上涨/下跌</th><th class="r">涨停/跌停</th><th>热门题材</th>
+              <th class="r">市场情绪</th>
+            </tr></thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+        <!-- 分页栏：每页 15 条；左侧年月选择器，右侧上一页/下一页 -->
+        <div class="tbl-pager" id="tblPager" hidden>
+          <div class="mp-wrap">
+            <button type="button" class="mp-btn" id="monthPick" aria-haspopup="listbox" aria-expanded="false" aria-controls="mpPop" aria-label="按年月筛选">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+              <b id="mpText">—</b>
+              <svg class="mp-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="mp-pop" id="mpPop" role="listbox" aria-label="年月列表" hidden></div>
+          </div>
+          <div class="tp-btns">
+            <button type="button" id="pgPrev">上一页</button>
+            <button type="button" id="pgNext">下一页</button>
+          </div>
+        </div>
+        </div>
+      </div>
+
+      <!-- Tab2 涨停晋级 -->
+      <div class="tabpane" id="pane-promo" role="tabpanel" tabindex="0" aria-labelledby="tab-promo">
+        <div class="promo-wrap">
+          <div class="pg-head">
+            <div class="pg-date"><b id="pgDate">-</b><span id="pgWeek">-</span></div>
+            <div class="pg-legend">
+              <span class="lg lg--ok"><i></i>成 · 晋级成功</span>
+              <span class="lg lg--boom"><i></i>炸 · 触板未封</span>
+              <span class="lg lg--fail"><i></i>败 · 未触板</span>
+            </div>
+          </div>
+          <div id="promoRows"></div>
+        </div>
+      </div>
+
+      <!-- Tab3 连板天梯 -->
+      <div class="tabpane" id="pane-ladder" role="tabpanel" tabindex="0" aria-labelledby="tab-ladder">
+        <div class="mx-wrap">
+          <div class="mx-note"><span class="up">红色</span>为当日最高板 · 悬停个股可看最新日K与分时<span class="mx-range" id="ladderRange">近 15 日</span></div>
+          <div class="mx-scroll"><table class="mx mx-ladder" id="mxLadder">
+            <thead><tr id="mxLadderHead"></tr></thead>
+            <tbody id="mxLadderBody"></tbody>
+            <tfoot id="mxLadderFoot"></tfoot>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- Tab4 概念热度 -->
+      <div class="tabpane" id="pane-heat" role="tabpanel" tabindex="0" aria-labelledby="tab-heat">
+        <div class="mx-wrap">
+          <div class="mx-note"><span>数字 = 当日该概念涨停家数 · 按出现频次排序</span><span class="mx-scale" title="颜色深浅只在同一天内部可比：当天最热的概念为最深"><i></i><em>少</em><em>多</em></span><span class="mx-filter" id="heatFilter"><button type="button" data-m="theme" class="on">题材<i>0</i></button><button type="button" data-m="all">全部<i>0</i></button></span><span class="mx-range" id="heatRange">近 15 日</span></div>
+          <div class="mx-scroll"><table class="mx mx-heat" id="mxHeat">
+            <thead><tr id="mxHeatHead"></tr></thead>
+            <tbody id="mxHeatBody"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+</div>
+
+<!-- 悬浮个股图表卡片 -->
+<div class="kp-bd" id="kpBd"></div>
+<div class="kp" id="kp" role="dialog" aria-labelledby="kpName" hidden>
+  <div class="kp-hd">
+    <span class="nm" id="kpName">—</span>
+    <span class="cd" id="kpCode">—</span>
+    <span class="px" id="kpPx"></span>
+    <span class="chg" id="kpChg"></span>
+    <button class="x" id="kpClose" aria-label="关闭">×</button>
+  </div>
+  <!-- 图区就是两张新浪静态图（日K + 分时，各 545×300），按原图尺寸排版 -->
+  <div class="kp-sina" id="kpSina" hidden></div>
+  <div class="kp-empty-box" id="kpEmpty" hidden></div>
+</div>
+
+<script>
+/* ---------- ECharts 按需加载 ----------
+   echarts.slim.js 是按本站实际用到的组件（折线 + 直角坐标系 + tooltip/markLine/axisPointer）
+   自建的裁剪版：509KB / gzip 174KB，比整包（1MB / gzip 327KB）省 153KB。
+   重建方法见 tools/echarts-build/README.md，升级 echarts 后必须重跑一次。
+   而且不再用 <script src> 写死：手机版把「分时」整块去掉了，悬浮个股卡在 900px 以下也不出现，
+   手机上根本用不到它，所以改成真要画图时才插标签——手机端一个字节都不为它付。 */
+const ECHARTS_SRC = 'vendor/echarts.slim.js';
+let _ecPromise = null;
+/* 上次加载是否失败过：分时块据此区分「还在加载」与「加载不出来」。
+   线上曾出现 nginx 把 /vendor/ 拦成 404（请求根本没到后端），
+   前端却一直显示「加载中…」，看不出是资源缺失还是网络慢。 */
+let _ecFail = false;
+function loadEcharts(){
+  if(window.echarts) return Promise.resolve(true);
+  if(_ecPromise) return _ecPromise;
+  _ecPromise = new Promise(resolve=>{
+    const s = document.createElement('script');
+    s.src = ECHARTS_SRC;
+    s.async = true;
+    s.onload = ()=>{ _ecFail = false; resolve(true); };
+    s.onerror = ()=>{ _ecPromise = null; _ecFail = true; resolve(false); };   // 失败清掉，下次还能重试
+    document.head.appendChild(s);
+  });
+  return _ecPromise;
+}
+// 数据由后端采集并导出到 data/records.json；失败时回退到种子数据
+let records = [];
+const MX_MAX_DAYS = 15, MX_MIN_COL = 54, HEAT_TOP = 14, LADDER_TOP = 12;
+async function fetchJSON(url, timeout = 6000, init){
+  const ctrl = new AbortController();
+  const timer = setTimeout(()=>ctrl.abort(), timeout);
+  try{
+    const r = await fetch(url, Object.assign({signal:ctrl.signal}, init));
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    return await r.json();
+  } finally { clearTimeout(timer); }
+}
+function bootError(){
+  $('#bootSpin').style.display = 'none';
+  const box = $('#bootText');
+  box.className = 'boot-err';
+  box.innerHTML = '<strong>数据加载失败</strong>请检查 data/records.json 是否可访问，然后重试。';
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.textContent = '重试加载';
+  btn.addEventListener('click', ()=>{
+    $('#bootSpin').style.display = '';
+    box.className = '';
+    box.textContent = '正在加载复盘数据…';
+    start();
+  });
+  box.appendChild(btn);
+}
+/* ---------- 历史按需加载 ----------
+   库里有 1990 年至今近 8700 个交易日。早先全量塞进 records.json：8.2MB、gzip 后 1.25MB，
+   而首屏真正用到的只有二十来条（当天 + 昨日 + 近 5 日情绪柱 + 15 行表格）。
+   现在 records.json 只留最近 90 个交易日，更早的按自然月分片放在 data/hist/YYYY-MM.json，
+   用户翻到哪个月才拉哪个月（一个月约 20KB gzip）。
+   `records` 仍然是一个日期倒序的数组，只是**中间可能有缺口**——用 __gapAfter 标出来。 */
+let MONTHS = [];                        // [{ym:'2026-11',n:12}] 倒序，覆盖全部历史
+let MONTHS_MAP = Object.create(null);
+let TOTAL_DAYS = 0;                     // 库里一共有多少个交易日（含未加载的）
+let LIVE = Object.create(null);         // 当前 records 里各月已加载天数
+const HIST_TRIED = new Set();           // 已经请求过的月份，失败也不反复重试
+
+function recount(){
+  LIVE = Object.create(null);
+  records.forEach(r=>{ const ym=(r.date||'').slice(0,7); LIVE[ym]=(LIVE[ym]||0)+1; });
+}
+function monthFull(ym){
+  const need = MONTHS_MAP[ym];
+  return !need || (LIVE[ym]||0) >= need;
+}
+/* 标出「这一段之后历史断档了」。不能按日期差判断——1999 年春节休市就整整 20 天，
+   和分片缺口的间隔完全一样，阈值怎么取都会错。真正的依据是**月份是否整月加载完**：
+     · 相邻两条同月 → 必然连续（分片是按整月切的）；
+     · 跨月时，a 所在月已整月加载 → 分片里带过来的「上月最后一天」就是 a 的上一交易日，
+       所以也连续；a 所在月只加载了一半（热数据窗口正好切在月中）→ 中间那些天没加载，是缺口。
+   缺口只影响「上一交易日」相关的计算（环比差额、连续放量天数），一律显示「—」或改用
+   后端算好的 amtPct，绝不拿两段不相邻的历史硬算。 */
+function markGaps(){
+  for(let i=0;i<records.length;i++){
+    const a=records[i], b=records[i+1];
+    if(!b){ a.__gapAfter = true; continue; }
+    const ya=(a.date||'').slice(0,7), yb=(b.date||'').slice(0,7);
+    a.__gapAfter = (ya !== yb) && !monthFull(ya);
+  }
+}
+/* 「上一交易日」的唯一取法：中间有缺口就当没有，宁可在界面上显示「—」也不给错数 */
+function prevOf(i){
+  const r = records[i];
+  if(!r || r.__gapAfter) return null;
+  return records[i+1] || null;
+}
+function mergeRecs(list){
+  if(!Array.isArray(list) || !list.length) return 0;
+  const seen = new Set(records.map(r=>r.date));
+  let added = 0;
+  list.forEach(r=>{
+    if(r && r.date && !seen.has(r.date)){ seen.add(r.date); records.push(r); added++; }
+  });
+  if(added) records.sort((a,b)=> a.date<b.date?1:a.date>b.date?-1:0);
+  recount();      // markGaps 依赖各月已加载天数，必须先统计
+  markGaps();
+  return added;
+}
+function monthReady(ym){ return monthFull(ym); }   // 月份选择器/日历用同一个判据
+/* 下一个还没加载的、更早的月份：先看当前最老那条所在月是否被切了一半 */
+function nextOlderYm(){
+  const oldest = records[records.length-1];
+  if(!oldest) return null;
+  const ym = oldest.date.slice(0,7);
+  if(!monthReady(ym)) return HIST_TRIED.has(ym) ? null : ym;
+  const i = MONTHS.findIndex(m=>m.ym===ym);
+  const nxt = i>=0 ? MONTHS[i+1] : null;
+  return nxt && !HIST_TRIED.has(nxt.ym) ? nxt.ym : null;
+}
+let _histBusy = null;
+const anchors = {date:null, viewDate:null};   // 合并分片后按日期重新定位，避免下标错位
+async function loadMonth(ym, opts){
+  if(!ym) return 0;
+  HIST_TRIED.add(ym);
+  try{
+    // 历史分片不会变（本月分片除外），走浏览器缓存；静态目录给了 1 天强缓存
+    const data = await fetchJSON(`data/hist/${ym}.json`, 12000);
+    const added = mergeRecs(data);
+    if(opts && opts.reanchor) reanchor();
+    return added;
+  }catch(e){ return 0; }
+}
+async function ensureOlder(){
+  if(_histBusy) return _histBusy;
+  const ym = nextOlderYm();
+  if(!ym) return 0;
+  _histBusy = loadMonth(ym, {reanchor:true}).finally(()=>{ _histBusy = null; });
+  return _histBusy;
+}
+/* 合并会让下标整体平移：按日期把「当前选中日」和「表格首行」重新对上 */
+function reanchor(){
+  if(anchors.date){
+    const i = records.findIndex(r=>r.date === anchors.date);
+    current = i >= 0 ? i : Math.min(current, records.length-1);
+  }
+  if(anchors.viewDate){
+    const i = records.findIndex(r=>r.date === anchors.viewDate);
+    viewStart = i >= 0 ? i : Math.min(viewStart, Math.max(0, records.length-1));
+  }
+}
+
+async function loadRecords(){
+  // 月份索引和热数据同时发：两者互不依赖，串行会白等一次往返
+  const monthsP = fetchJSON('data/records.months.json', 4000, {cache:'no-cache'}).catch(()=>null);
+  try{
+    // cache:'no-cache'：每次带 ETag 协商，未变化走 304（0 字节 body），
+    // 变化才重下。之前用 ?t= 时间戳破坏缓存，每次都要全量拉。
+    const data = await fetchJSON('data/records.json', 6000, {cache:'no-cache'});
+    if(!Array.isArray(data) || !data.length) throw new Error('empty records');
+    // data_status=1 是盘中轮询写入的记录：指数/涨跌家数/成交额/涨停族/题材/晋级
+    // 全部为盘中实时值（多源热备采集，缺一个主源即放弃写入以免 null 覆盖）。
+    // 盘中打开就能看到"现在市场什么样子"；缺的字段一律显示"—"，徽标标「盘中」；
+    // 情绪均值只算完整交易日，晋级梯队缺数据时回退到最近完整交易日。
+    records = data;
+    recount();
+    // 月份索引（约 13KB，给「年月」选择器用）：失败不影响主流程，退化成只能看已加载月份
+    const idx = await monthsP;
+    if(idx && Array.isArray(idx.months)){
+      MONTHS = idx.months;
+      MONTHS_MAP = Object.create(null);
+      MONTHS.forEach(m=>{ MONTHS_MAP[m.ym] = m.n; });
+      TOTAL_DAYS = Number(idx.total) || records.length;
+      recount();
+    }
+    if(!TOTAL_DAYS) TOTAL_DAYS = records.length;
+    markGaps();     // 必须在 MONTHS_MAP/LIVE 就绪之后：缺口的判据是「该月是否整月加载完」
+    return true;
+  }catch(e){
+    try{
+      const data = await fetchJSON('data/records.seed.json');
+      if(!Array.isArray(data) || !data.length) throw new Error('empty seed');
+      records = data;
+      recount(); markGaps();
+      TOTAL_DAYS = records.length;
+      return true;
+    }catch(e2){ bootError(); return false; }
+  }
+}
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num = n => (n==null || n==='' || Number.isNaN(Number(n))) ? '—' : Number(n).toLocaleString('zh-CN');
+const num2 = n => (n==null || n==='' || Number.isNaN(Number(n))) ? '—' : Number(n).toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2});
+const sign = n => (n==null || Number.isNaN(Number(n))) ? '—' : (n>0?'+':'')+Number(n).toFixed(2)+'%';
+const cls = n => n>0?'up':n<0?'down':'flat';
+let current = 0;
+/* 盘中半成品：成交额/指数/涨跌家数已到位，涨停·炸板·连板·情绪分未采 */
+const isIntraday = r => r && Number(r.data_status) === 1;
+
+let toastT;
+function showToast(msg){
+  const t=$('#toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  clearTimeout(toastT);
+  toastT=setTimeout(()=>t.classList.remove('show'), 2600);
+}
+
+/* 弹层统一滚动锁：避免背景跟着滚，触屏体验更接近原生 */
+function setModalLock(on){ document.documentElement.classList.toggle('modal-open', !!on); }
+/* 分档切点与 backend/indicators.py 的 MOOD_TAGS 保持一致（按实际分布标定，cap=65 下 80 档永远达不到） */
+function moodTag(m){return m>=58?'亢奋':m>=44?'偏暖':m>=32?'震荡':m>=20?'退潮':'冰点';}
+/* 最新一条数据 ≠ 一定是"今天"。只有当日收盘出数之后才算今日；开盘前、周末、节假日、
+   或者当日采集还没跑完时，records[0] 其实是昨日（或上一交易日）的收盘数据。
+   徽标继续写「今日」会让人误以为看的是盘中实时值，所以按自然日差说实话。 */
+function newestLabel(){
+  const last = records[0] && records[0].date;
+  if(!last) return '今日';
+  // 最新一条是盘中轮询的半成品时，说「今日」会让人误以为是收盘数据
+  if(isIntraday(records[0])) return '盘中';
+  const n = new Date();
+  const today = `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
+  if(last === today) return '今日';
+  // 两边都显式按本地零点解析：直接 new Date('2026-11-19') 会被当成 UTC，
+  // 在东八区会落到 11-19 08:00，跟本地零点相减得到 0.67 天再取整就错一天。
+  const gap = Math.round((new Date(today+'T00:00:00') - new Date(last+'T00:00:00')) / 864e5);
+  // gap=0 已在上面返回「今日」；只剩 1 天说「昨日」，更长（周末/节假日/连休）统一说「上一交易日」
+  return gap > 1 ? '上一交易日' : '昨日';
+}
+/* 情绪色阶：冷青 → 中性灰 → 暖橙 → 深红；全档白底对比度 ≥ 4.5:1 */
+const MOOD_COLORS=['#B91C1C','#C2410C','#475569','#0F766E','#134E4A'];
+const MOOD_BGS=['#FEF2F2','#FFF7ED','#F1F5F9','#F0FDFA','#F0FDFA'];
+/* 刻度上限：与 backend/indicators.py 的 MOOD_FIT['CAP'] 保持一致，迷你柱归一化从这里取 */
+const MOOD_CAP = 65;
+const moodLevel = m => m>=58?0:m>=44?1:m>=32?2:m>=20?3:4;
+const moodColor = m => MOOD_COLORS[moodLevel(m)];
+const moodBg = m => MOOD_BGS[moodLevel(m)];
+
+/* 涨停原因里混着大量「公告类」标签：三季报增长、股份回购、中标……它们不是题材，
+   却按家数排进榜，把存储芯片、算力租赁这类真实主线挤出前五。
+   这里做一次轻量归类：榜单默认只留"题材"，公告类可一键切回。 */
+const ANNOUNCE_RE = /(季报|中报|年报|业绩|预增|预盈|预亏|扭亏|减亏|高增|净利|营收|回购|增持|减持|定增|可转债|中标|签订|合同|订单|收购|并购|重组|借壳|分红|股权激励|解禁|质押|诉讼|立案|处罚|复牌|摘帽|风险提示|澄清|交易异常)/;
+const isAnnounce = n => ANNOUNCE_RE.test(String(n||''));
+const heatListOf = r => Array.isArray(r.heat) ? r.heat : (Array.isArray(r.concepts) ? r.concepts : []);
+const themeListOf = r => heatListOf(r).filter(c=>!isAnnounce(c[0]));
+
+/* 近 N 日情绪迷你柱：窗口固定为最近 N 个交易日（当前日一定在窗口内），
+   末根高亮当前日；右侧给窗口均值作参照——比"第 K 低"更中性：
+   分数最高那天也能读（"低于近 5 日均值"），不会出现"第 5 低"这种反话。 */
+const SPARK_N = 5;
+function drawMoodSpark(r, idx){
+  // 早年基础数据日没有情绪分：不能把 0 分画成柱子、更不能算出「近5日 均0」。
+  // 这里直接清空，避免本函数在 applyNaState 之后又把缺失态覆盖回去。
+  if(isBasicOnly(r)){
+    const box=$('#dMoodSpark'), rank=$('#dMoodRank');
+    if(box) box.innerHTML='';
+    if(rank) rank.innerHTML='';
+    return;
+  }
+  const start = Math.max(0, Math.min(idx, records.length - SPARK_N));
+  const win = records.slice(start, start + SPARK_N);      // 最新 → 更早
+  const pts = win.slice().reverse();                      // 最早 → 最新
+  const BASE = MOOD_CAP;                                  // 与后端 CAP 一致，刻度不随窗口漂移
+  // 柱高跟随 CSS（矮屏 19px / 2K 30px / 4K 34px），否则固定像素在缩放后会溢出容器
+  const box = $('#dMoodSpark');
+  const SPH = Math.max(14, (box && box.clientHeight) || 26);
+  $('#dMoodSpark').innerHTML = pts.map(p=>{
+    const cur = p.date === r.date;
+    // 盘中柱：情绪分是实时口径（与收盘同公式），画真实高度但用浅色区分，
+    // title 注明"盘中实时，收盘后更新终值"
+    if(isIntraday(p)){
+      const v = Number(p.mood)||0;
+      const h = v ? Math.max(2, Math.min(SPH, v/BASE*SPH)) : 2.5;
+      return `<i class="pend${cur?' cur-pend':''}" style="height:${h.toFixed(1)}px" title="${p.date} · 盘中实时 ${v} 分"></i>`;
+    }
+    const v = Number(p.mood)||0;
+    const h = Math.max(2, Math.min(SPH, v/BASE*SPH));
+    return `<i class="${cur?'cur':''}" style="height:${h.toFixed(1)}px" title="${p.date} · ${v} 分"></i>`;
+  }).join('');
+  const fullDays = win.filter(p=>!isIntraday(p));
+  if(fullDays.length){
+    const avg = Math.round(fullDays.reduce((t,p)=>t+(Number(p.mood)||0), 0) / fullDays.length);
+    const nLbl = fullDays.length === win.length ? win.length : `${fullDays.length}+`;
+    $('#dMoodRank').innerHTML = `近${nLbl}日 均<b>${avg}</b>`;
+  } else {
+    $('#dMoodRank').innerHTML = '近5日 均<b>—</b>';
+  }
+}
+
+/* 昨日涨停今日表现：平均涨幅 / 红盘占比 / 继续封板数 */
+function renderYesterdayPerf(r, idx){
+  const yp = r.yp || {};
+  const prevRec = prevOf(idx);
+  const total = prevRec ? Number(prevRec.zt) : null;
+  const hasAvg = yp.avg !== null && yp.avg !== undefined && !Number.isNaN(Number(yp.avg));
+  const avg = hasAvg ? Number(yp.avg) : null;
+  const aEl = $('#dYPAvg');
+  aEl.textContent = avg===null ? '—' : `${avg>0?'+':''}${avg.toFixed(2)}%`;
+  aEl.style.color = avg===null ? 'var(--tx3)' : avg>0 ? 'var(--up)' : avg<0 ? 'var(--dn)' : 'var(--tx2)';
+  const red = Number(yp.red||0), promo = Number(yp.promo||0);
+  const rEl = $('#dYPRed');
+  rEl.innerHTML = total ? `${red}<small>/${total}</small>` : `${red}`;
+  rEl.style.color = !total ? 'var(--tx2)' : (red/total >= .5 ? 'var(--up)' : red>0 ? 'var(--tx2)' : 'var(--tx3)');
+  const pEl = $('#dYPPromo');
+  pEl.textContent = promo;
+  pEl.style.color = promo>0 ? 'var(--up)' : 'var(--tx2)';
+}
+
+/* 成交额自适应单位：1990-1994 全天成交仅几十万~几亿元，固定「万亿 + 两位小数」
+   会把真实值显示成 0.00，等价于把有数据说成没数据。按量级切换万元/亿元/万亿。 */
+function amtParts(v){
+  const n=Number(v);
+  if(!Number.isFinite(n)||n<=0) return null;
+  const a=Math.abs(n);
+  if(a<1e-4) return {num:(n*1e8).toFixed(1), unit:'万元'};
+  if(a<0.01) return {num:(n*1e4).toFixed(2), unit:'亿元'};
+  return {num:n.toFixed(2), unit:'万亿'};
+}
+function fmtAmt(v){
+  const p=amtParts(v);
+  return p ? `${p.num} ${p.unit}` : '—';
+}
+
+/* 历史数据口径：早年只有指数/成交额，涨停族相关指标无历史源。
+   识别后把相关区块收敛成一张说明卡，而不是堆一排破折号。 */
+function isBasicOnly(r){
+  if(isIntraday(r)) return false;
+  const hasPool = (r.zt!=null && r.zt!==undefined) || (r.heat&&r.heat.length) || (r.promo&&r.promo.length);
+  const hasMood = r.mood!=null && r.mood!==undefined;
+  return !hasPool && !hasMood;
+}
+/* 推导口径：1996-12-16 ~ 2025-09-30 的涨停族由全市场个股日线反推，
+   与 2025-10 起的实时采集不同，需明确标注，避免被误当成真实采集值。 */
+function isDerived(r){
+  if(isIntraday(r) || !r.date || r.zt==null) return false;
+  return r.date >= '1996-12-16' && r.date < '2025-11-05';
+}
+function applyNaState(r){
+  const basic = isBasicOnly(r);
+  // 情绪卡：用简洁的「暂无」态替代 0/100 + 假标签
+  const moodCell = $('#dMoodCell');
+  if(moodCell){
+    moodCell.classList.toggle('na', basic);
+    if(basic){
+      $('#dMood').textContent='—';
+      const tag=$('#dMoodTag'); tag.textContent='无数据'; tag.style.color=''; tag.style.background='#EDF1F7';
+      const rank=$('#dMoodRank'); if(rank) rank.textContent='';
+      const spark=$('#dMoodSpark'); if(spark) spark.innerHTML='';
+      const md=$('#dMoodDelta'); if(md){ md.textContent=''; md.className='mood-delta'; }
+    }
+  }
+  if(basic){ const mm=$('#mMood'); if(mm){ mm.innerHTML='—<small>无数据</small>'; mm.style.color='var(--tx3)'; } }
+  // 市场广度：缺失时隐藏内部指标，显示说明卡；题材块同理
+  const note=$('#dNaNote'), dn=$('#dDerivedNote'), bb=$('#dBreadthBlock'), cb=$('#dConceptBlock');
+  if(!note||!bb||!cb) return;
+  note.hidden = !basic;
+  if(dn) dn.hidden = !(isDerived(r) && !basic);
+  // 广度块内除说明卡外的子元素（bar/legend/grid/yp）
+  [...bb.children].forEach(el=>{ if(el!==note) el.classList.toggle('na-hidden', basic); });
+  // 题材块：基本数据日隐藏列表，label 改文案
+  const label=$('#dConceptLabel'), list=$('#dConcepts');
+  if(basic){ if(label) label.textContent='热门题材 · 暂无'; if(list) list.classList.add('na-hidden'); }
+  else { if(label) label.textContent='热门题材 · 涨停家数 Top 4'; if(list) list.classList.remove('na-hidden'); }
+  if(basic){
+    const nf=$('#dNaFund'); if(nf) nf.textContent = r.mainNet!=null ? '、主力资金' : '';
+    const at=$('#dNaAmtTxt'); if(at) at.hidden = !(r.amt>0);
+  }
+}
+function renderDetail(r, idx){
+  applyNaState(r);   // 先定口径：基础数据日收敛缺失区块，避免成片破折号
+  const d = r.date.split('-');
+  const wk = '星期'+r.week.replace('周','');
+  // 最新一天用「今日/昨日/上一交易日」贴真实时间，回看时改为「回看」，两个位置文案同源
+  const newest = newestLabel();
+  const kLabel = idx === 0 ? newest : '回看';
+  $('#dYM').textContent = `${d[0]}年${Number(d[1])}月${Number(d[2])}日`;
+  $('#dWeek').textContent = wk;
+  $('#dpDate').textContent = `${d[0]}年${Number(d[1])}月${Number(d[2])}日`;
+  $('#dpWeek').textContent = wk+' · '+kLabel;
+  const badge = $('#dBadge'), backBtn = $('#backToday');
+  badge.textContent = kLabel;
+  badge.hidden = idx !== 0;
+  // 「回到上一交易日」六个字在 390px 手机上会把日期挤到换行，退化成「回到最新」
+  backBtn.textContent = (newest === '上一交易日' || newest === '盘中') ? '回到最新' : `回到${newest}`;
+  backBtn.hidden = idx === 0;
+  $('#navPrev').disabled = idx >= records.length-1 && !nextOlderYm();
+  $('#navNext').disabled = idx === 0;
+  const prevDay = prevOf(idx), nextDay = records[idx-1];
+  $('#navPrev').title = prevDay ? '上一交易日 '+prevDay.date : '已是最新交易日';
+  $('#navNext').title = nextDay ? '下一交易日 '+nextDay.date : '已是最早交易日';
+  // 情绪：盘中轮询已升级为真实口径（与收盘同公式 calc_mood），直接展示实时值；
+  // 只有盘中情绪缺采（null）时才显示「盘中」占位。均值序列仍只算完整交易日。
+  const pend = isIntraday(r);
+  const mv = (r.mood===null || r.mood===undefined) ? null : Number(r.mood);
+  const mc = mv==null ? 'var(--tx3)' : moodColor(mv);
+  $('#dMood').textContent = mv==null ? '—' : mv;
+  const tagEl = $('#dMoodTag');
+  tagEl.textContent = mv==null ? (isBasicOnly(r) ? '无数据' : (pend ? '盘中' : '—')) : (pend ? moodTag(mv)+' ·实时' : moodTag(mv));
+  tagEl.style.color = mc;
+  tagEl.style.background = mv==null ? '#F1F5F9' : moodBg(mv);
+  drawMoodSpark(r, idx);
+  const md = $('#dMoodDelta');
+  if(!pend && r.moodDelta !== null && r.moodDelta !== undefined){
+    md.className = 'mood-delta '+cls(r.moodDelta);
+    md.textContent = `${r.moodDelta>0?'▲':r.moodDelta<0?'▼':'—'} ${Math.abs(r.moodDelta)}`;
+  } else { md.textContent=''; md.className='mood-delta'; }
+  // 昨日涨停今日表现
+  renderYesterdayPerf(r, idx);
+  // 核心指数：按本机保存的 6 个自选渲染；点卡片切换下方分时
+  IDX.render(r, idx);
+  MIN.render(r, idx);   // 选中指数分时（async，不阻塞主渲染）
+  // 成交额环比。盘中(data_status=1) amt 是截至当前的累计量，只显示实时交易额；
+  // 预估全天/环比百分比属于估算口径，收盘后的完整交易日才展示。
+  const ap0=amtParts(r.amt);
+  $('#dAmt').textContent = ap0 ? ap0.num : '—';
+  $('#dAmtUnit').textContent = ap0 ? ap0.unit : '';
+  const deltaEl = $('#dAmtDelta');
+  const prev = prevOf(idx);
+  if(isIntraday(r)){
+    // 盘中：环比/预估全天收盘后再出，空白处显示当前数据的采集时间
+    deltaEl.style.display='';
+    deltaEl.className='turn-delta flat';
+    const t = (r.dataTime===null||r.dataTime===undefined||r.dataTime==='') ? '盘中实时' : `数据时间 ${r.dataTime}`;
+    deltaEl.innerHTML = `<span class="dmain" style="color:var(--tx2)">${t}</span>`;
+    deltaEl.title = '盘中轻量轮询的采集时间，收盘后更新为终值';
+  }else if(prev){
+    const cur=parseFloat(r.amt), pv=parseFloat(prev.amt);
+    if(Number.isFinite(cur) && Number.isFinite(pv)){
+      const diff=cur-pv;
+      const dir = diff>=0 ? 1 : -1;
+      let streak=0;
+      // 连续放量/缩量不能跨过「没加载的历史缺口」继续算，遇到断点就停
+      for(let k=idx;k<records.length-1;k++){
+        if(records[k].__gapAfter) break;
+        const a=parseFloat(records[k].amt), b=parseFloat(records[k+1].amt);
+        if(!Number.isFinite(a) || !Number.isFinite(b)) break;
+        const s=a-b>=0?1:-1;
+        if(s===dir) streak++; else break;
+      }
+      deltaEl.style.display='';
+      deltaEl.className = 'turn-delta '+(diff>=0?'up':'down');
+      const ap = (r.amtPct===null||r.amtPct===undefined) ? null : Number(r.amtPct);
+      const pctTxt = ap===null ? '' : `<span class="dpct">${ap>0?'+':''}${ap.toFixed(1)}%</span>`;
+      deltaEl.title = `较上日${diff>0?'放量':diff<0?'缩量':'持平'} ${fmtAmt(Math.abs(diff))}`
+        + (ap===null?'':` · ${ap>0?'+':''}${ap.toFixed(1)}%`);
+      deltaEl.innerHTML = `<span class="dmain">${diff>=0?'+':'−'}${fmtAmt(Math.abs(diff))}</span>${pctTxt}`
+        + `<span class="streak">连续 ${streak} 日${diff>=0?'放量':'缩量'}</span>`;
+    }else{
+      deltaEl.style.display=''; deltaEl.className='turn-delta flat'; deltaEl.textContent='— 无前值'; deltaEl.title='';
+    }
+  }else if(r.amtPct!==null && r.amtPct!==undefined){
+    // 上一交易日落在「还没加载的历史分片」里（分片边界）：差额算不出来，
+    // 但后端已经按相邻交易日算好了环比，直接给百分比 + 一句说明，比显示「— 无前值」有用
+    const ap = Number(r.amtPct);
+    deltaEl.style.display=''; deltaEl.className='turn-delta flat';
+    deltaEl.innerHTML = `<span class="dpct">${ap>0?'+':''}${ap.toFixed(1)}%</span>`
+      + `<span class="streak">较上日 · 上一日未加载</span>`;
+    deltaEl.title = '上一交易日的历史还没加载，只显示环比百分比';
+  }else{ deltaEl.style.display=''; deltaEl.className='turn-delta flat'; deltaEl.textContent='— 无前值'; deltaEl.title=''; }
+  // 主力净流入 + 超大单/大单拆分
+  const fn=$('#dFund');
+  if(r.mainNet!==null && r.mainNet!==undefined && !Number.isNaN(Number(r.mainNet))){
+    const fv=Number(r.mainNet), fp=r.mainPct==null?null:Number(r.mainPct);
+    fn.className='fund-num';
+    fn.style.color=fv>0?'var(--up)':'var(--dn)';
+    fn.innerHTML=`${fv>0?'+':''}${fv.toFixed(2)}<small>亿</small>${fp!=null?`<em>${fp>0?'+':''}${fp.toFixed(2)}%</em>`:''}`;
+  }else{
+    fn.className='fund-na'; fn.textContent='暂无数据'; fn.style.color='';
+  }
+  const setSplit=(sel, v)=>{
+    const el=$(sel);
+    const has = v!==null && v!==undefined && !Number.isNaN(Number(v));
+    el.innerHTML = has ? `${Number(v)>0?'+':''}${Number(v).toFixed(1)}<small>亿</small>` : '—';
+    el.style.color = !has ? 'var(--tx3)' : Number(v)>0 ? 'var(--up)' : Number(v)<0 ? 'var(--dn)' : 'var(--tx2)';
+  };
+  setSplit('#dSuper', r.superNet);
+  setSplit('#dBig', r.bigNet);
+  // 广度：三个数任一缺失就画不了比例条（历史回填日可能只有涨跌家数），整条置空防 NaN%
+  const t=(Number(r.up)||0)+(Number(r.flat)||0)+(Number(r.down)||0);
+  const seg=(sel,v)=>{
+    const w = t && v!=null ? (Number(v)/t*100)+'%' : '0%';
+    $(sel).style.width=w;
+  };
+  seg('#dSegU',r.up);seg('#dSegF',r.flat);seg('#dSegD',r.down);
+  $('#dUp').textContent=num(r.up);$('#dFlat').textContent=num(r.flat);$('#dDown').textContent=num(r.down);
+  $('#brBar').title = t ? `上涨 ${(r.up/t*100).toFixed(1)}% · 平盘 ${(r.flat/t*100).toFixed(1)}% · 下跌 ${(r.down/t*100).toFixed(1)}%` : '';
+  $('#dZT').textContent=r.zt;$('#dDT').textContent=r.dt;
+  // 盘前/盘中采集可能只写到一半：zbrate/lb 会是 null，不能无条件 toFixed
+  $('#dZB').innerHTML = r.zbrate==null ? '—' : Number(r.zbrate).toFixed(1)+'<small>%</small>';
+  $('#dZB').style.color = r.zbrate>45 ? 'var(--warn)' : 'var(--tx)';
+  $('#dLB').innerHTML = r.lb==null ? '—' : r.lb+'<small>板</small>';
+  // 题材：优先只取"题材类"标签；若当日全是公告类，退回全量，避免整块空白
+  const thm = themeListOf(r), allH = heatListOf(r);
+  const cs = (thm.length ? thm : allH).slice(0, 4);
+  const cl = $('#dConceptLabel');
+  if(cl) cl.textContent = isBasicOnly(r) ? '热门题材 · 暂无'
+    : (thm.length ? '热门题材' : '热门概念') + ' · 涨停家数 Top 4';
+  if(cs.length){
+    $('#dConcepts').innerHTML=cs.map((c,i)=>`<li data-tk="${esc(r.date)}|${esc(c[0])}"><span class="cc-rank">${String(i+1).padStart(2,'0')}</span><span class="cc-name">${esc(c[0])}</span><span class="cc-pct">${c[1]}<small>家</small></span></li>`).join('');
+  } else {
+    $('#dConcepts').innerHTML='<li class="mx-empty" style="padding:14px 0">当日无概念数据</li>';
+  }
+  // 窄屏摘要（折叠态）：只看四个决策数字，详情按需展开
+  const aps=amtParts(r.amt);
+  $('#mAmt').innerHTML = aps ? `${aps.num}<small>${aps.unit}</small>` : '—';
+  $('#mMood').innerHTML = isBasicOnly(r) ? '—<small>无数据</small>'
+    : (r.mood===null||r.mood===undefined) ? '—<small>盘中</small>'
+    : `${r.mood}<small>${isIntraday(r)?'盘中实时':moodTag(r.mood)}</small>`;
+  // 无情绪分时不要走 moodColor(null)（会取到色阶里的深青），保持置灰
+  $('#mMood').style.color = (isBasicOnly(r) || r.mood===null || r.mood===undefined)
+    ? 'var(--tx3)' : moodColor(r.mood);
+  $('#mZT').innerHTML = `<span class="up">${r.zt==null?'—':r.zt}</span><span class="sep" style="color:#C3CCD9;font-weight:400">/</span><span class="down">${r.dt==null?'—':r.dt}</span>`;
+  $('#mLB').innerHTML = `${r.lb==null?'—':r.lb}<small>板</small>`;
+  document.title = `A股复盘 · ${r.date}`;
+  $('#detail').scrollTop = 0;
+  renderPromo(r);
+}
+
+/* ---------- Tab1 每日数据（每页 15 条；底部左侧年月选择器、右侧翻页按钮） ----------
+   分页用「绝对起点 viewStart」而不是「第几页」：选月份只是一次定位（跳到该月最后
+   一个交易日当首行），之后翻页在整个 records 里自由前后走，不再被月份框住。
+   之前用 monthFilter 过滤行集合，选完月份就只能在该月内翻，翻不出去。 */
+const PAGE_SIZE = 15;
+let viewStart = 0;        // 当前视图第一行的 records 下标（0 = 最新交易日）
+let monthFilter = null;   // 仅用于「年月」按钮文案与弹层高亮，不再约束行范围
+/* 翻页互斥。补月分片要 await，连点两次「下一页」会在同一个旧 viewStart 上各加 15，
+   于是落点被推到数组末尾、整页只剩 1~2 行——这就是「翻页后页面错乱」的根因之一 */
+let _pgBusy = false;
+function fmtYM(ym){
+  if(!ym) return '全部月份';
+  const [y,m] = ym.split('-');
+  return `${y} 年 ${Number(m)} 月`;
+}
+function syncPager(){
+  const total = records.length;
+  if(!total){ $('#tblPager').hidden = true; return; }
+  viewStart = Math.max(0, Math.min(viewStart, total - 1));
+  $('#tblPager').hidden = false;
+  $('#pgPrev').disabled = viewStart <= 0;
+  // 下一页：已加载的行不够翻 + 还有更早的月份没拉 → 仍然可点，点了会去加载
+  $('#pgNext').disabled = (viewStart + PAGE_SIZE >= total) && !nextOlderYm();
+  // 翻出所选月份后自动收掉月份标签，避免左上角显示的月份和表里行对不上
+  const r0 = records[viewStart];
+  if(monthFilter && (!r0 || r0.date.slice(0,7) !== monthFilter)) monthFilter = null;
+  anchors.viewDate = r0 ? r0.date : anchors.viewDate;
+  $('#mpText').textContent = fmtYM(monthFilter || (r0 ? r0.date.slice(0,7) : null));
+}
+function setPagerBusy(on){
+  const b = $('#pgNext'), p = $('#pgPrev');
+  if(!b || !p) return;
+  b.disabled = on; p.disabled = on;
+  b.classList.toggle('is-busy', on);
+  b.textContent = on ? '加载中…' : '下一页';
+}
+async function gotoPage(step){
+  if(_pgBusy) return;                       // 正在补数据：忽略连点，别再推进 viewStart
+  const target = viewStart + step * PAGE_SIZE;
+  if(target <= 0){ viewStart = 0; renderTable(); return; }
+  // 一页 15 行、一个月分片 18~23 行：翻到月界时只补一片常常凑不满一页（只剩 8 行）。
+  // 补到「落点之后还有一整页」为止，最多 3 片，防止历史被裁掉时无限拉。
+  if(step > 0 && target + PAGE_SIZE > records.length && nextOlderYm()){
+    _pgBusy = true;
+    setPagerBusy(true);
+    try{
+      for(let k = 0; k < 3; k++){
+        if(records.length >= target + PAGE_SIZE) break;
+        if(!nextOlderYm()) break;
+        const added = await ensureOlder();
+        if(!added) break;
+      }
+    } finally{
+      _pgBusy = false;
+      setPagerBusy(false);
+    }
+  }
+  // 落点要能容纳一整页；历史到底了就停在最后一整页，绝不出现「只有 1~2 行」的半页
+  viewStart = Math.max(0, Math.min(target, records.length - PAGE_SIZE));
+  renderTable();
+}
+function fundCellHTML(r){
+  const v=r.mainNet, p=r.mainPct;
+  if(v===null || v===undefined || Number.isNaN(Number(v))) return '<span class="fund-c na">—</span>';
+  const n=Number(v), up=n>0, pp=(p===null||p===undefined)?null:Number(p);
+  return `<span class="fund-c ${up?'up':'down'}"><span class="fv">${up?'+':''}${n.toFixed(2)}<small>亿</small></span>${pp!==null?`<em>${pp>0?'+':''}${pp.toFixed(2)}%</em>`:''}</span>`;
+}
+function renderTable(){
+  syncPager();
+  const total = records.length;
+  const idxs = [];
+  for(let i = viewStart; i < Math.min(viewStart + PAGE_SIZE, total); i++) idxs.push(i);
+  const wrap = $('#tableWrap');
+  // 行高恒定按「一页 15 行」平分，不按本页实际行数。旧逻辑按实际行数平分，翻到月界
+  // 只剩 8 行时行高会从 49px 跳到 91px（只剩 2 行时跳到 300+px），整张表看着像塌了——
+  // 行数不足就下方留白，行高在翻页过程中保持恒定。
+  // 用像素值写死：面板隐藏时 clientHeight 为 0，保留旧值（切回 tab 会重算）
+  if(wrap.clientHeight > 60){
+    wrap.style.setProperty('--rowH', Math.max(30, (wrap.clientHeight - 42) / PAGE_SIZE).toFixed(2) + 'px');
+  }
+  const html = idxs.map(i=>{
+    const r=records[i], pv=prevOf(i);
+    // 环比优先用后端算好的 amtPct（库里按相邻交易日算的），这样即便上一交易日在
+    // 没加载的分片里、拿不到 pv，环比也不会退化成「—」或者算错
+    const ap0 = (r.amtPct===null||r.amtPct===undefined) ? null : Number(r.amtPct);
+    const diff = (pv && r.amt!=null && pv.amt!=null) ? parseFloat(r.amt)-parseFloat(pv.amt) : null;
+    let amtD='<span class="ad na" title="无上一交易日数据">—</span>';
+    // 盘中行只显示实时成交额，环比列留空（估算口径收盘后再出）
+    if(isIntraday(r)){
+      amtD = `<span class="ad na" title="盘中实时 · 收盘后更新环比">盘中</span>`;
+    }else if(diff!==null){
+      const ap = ap0;
+      const k = diff>0?'up':diff<0?'down':'flat';
+      if(ap===null){
+        amtD = `<span class="ad ${k}" title="较上日${diff>0?'放量':diff<0?'缩量':'持平'} ${fmtAmt(Math.abs(diff))}">${diff>0?'+':diff<0?'−':''}${fmtAmt(Math.abs(diff)).split(' ')[0]}</span>`;
+      }else{
+        amtD = `<span class="ad ${k}" title="较上日${diff>0?'放量':diff<0?'缩量':'持平'} ${fmtAmt(Math.abs(diff))} · ${ap>0?'+':''}${ap.toFixed(1)}%">${ap>0?'+':ap<0?'−':''}${Math.abs(ap).toFixed(1)}%</span>`;
+      }
+    }else if(ap0!==null){
+      // 上一交易日没加载（分片边界）：只给百分比，不给差额——差额需要上一日的数值
+      const k = ap0>0?'up':ap0<0?'down':'flat';
+      amtD = `<span class="ad ${k}" title="较上一交易日 ${ap0>0?'+':''}${ap0.toFixed(1)}%（上一日未加载，不显示差额）">${ap0>0?'+':ap0<0?'−':''}${Math.abs(ap0).toFixed(1)}%</span>`;
+    }
+    // 概念标签：先按上限铺出来，渲染后按「题材列的真实可用宽度」裁。
+    // 之前用 innerWidth 猜断点，1280~1580 之间经常多放一个标签被挤成「…(2)」。
+    const thC = themeListOf(r), allC = heatListOf(r);
+    const concepts = (thC.length ? thC : allC).slice(0, 12);
+    let tags = concepts.map(c=>`<em data-tk="${esc(r.date)}|${esc(c[0])}"><span class="ct-n">${esc(c[0])}</span><i>(${c[1]})</i></em>`).join('')
+      || '<em style="color:var(--tx3)">—</em>';
+    tags += '<em class="more" hidden></em>';
+      // 成交额主数字按较前一日放量/缩量着红/绿（缩量=绿，与涨跌色约定一致）；
+      // 盘中行只有半天累计量，与昨日全天可比性不成立，保持中性色
+      const amtC = (!isIntraday(r) && r.amt!=null)
+        ? (diff!==null ? (diff>=0?'up':'down') : (ap0!==null ? (ap0>=0?'up':'down') : ''))
+        : '';
+      const cp=amtParts(r.amt);
+      return `<tr data-idx="${i}" class="${i===current?'selected':''}" tabindex="0" aria-current="${i===current?'true':'false'}" aria-label="${r.date} ${r.week} 复盘详情">
+      <td><div class="d-cell"><b>${r.date}</b><span>${r.week}</span></div></td>
+      <td class="r"><span class="idx-c"><span class="${cls(r.shP)}">${num2(r.sh)}</span><small class="${cls(r.shP)}">${sign(r.shP)}</small></span></td>
+      <td class="r"><span class="idx-c"><span class="${cls(r.szP)}">${num2(r.sz)}</span><small class="${cls(r.szP)}">${sign(r.szP)}</small></span></td>
+      <td class="r"><span class="idx-c"><span class="${cls(r.cyP)}">${num2(r.cy)}</span><small class="${cls(r.cyP)}">${sign(r.cyP)}</small></span></td>
+      <td class="r"><span class="amt-c"><span class="av ${amtC}">${cp?cp.num:'—'}<small>${cp?cp.unit:''}</small></span>${amtD}</span></td>
+      <td class="r">${fundCellHTML(r)}</td>
+      <td class="r cbr"><span class="cstack"><span class="cnt"><span class="up">${num(r.up)}</span><span class="sep">/</span><span class="down">${num(r.down)}</span></span><small>平盘 ${num(r.flat)}</small></span></td>
+      <td class="r ccnt"><span class="cstack"><span class="cnt"><span class="up">${r.zt==null?'—':r.zt}</span><span class="sep">/</span><span class="down">${r.dt==null?'—':r.dt}</span></span><small>炸 ${r.zbrate==null?'—':Number(r.zbrate).toFixed(1)+'%'} · 最高 ${r.lb==null?'—':r.lb} 板</small></span></td>
+      <td><span class="concept-tags">${tags}</span></td>
+      <td class="r"><span class="cstack">${isBasicOnly(r) ? '<span class="mood-c"><b>—</b></span><small>无数据</small>' : (r.mood===null||r.mood===undefined) ? '<span class="mood-c"><b>—</b></span><small>盘中</small>' : `<span class="mood-c"><span class="mtrack"><i style="width:${r.mood}%;background:${moodColor(r.mood)}"></i></span><b>${r.mood}</b></span><small>${isIntraday(r)?'盘中实时':moodTag(r.mood)}</small>`}</span></td>
+    </tr>`;
+  }).join('');
+  $('#tbody').innerHTML = html;
+  requestAnimationFrame(fitConceptTags);
+}
+
+/* 概念标签按列宽自适应：全部先显示，量出第一个越界的，从它开始收起并补「+N」。
+   比按断点猜更准——题材列是唯一弹性列，宽度随视口线性变化，断点之间必然有一段误差。 */
+function fitConceptTags(){
+  $$('#tbody .concept-tags').forEach(box=>{
+    const more = box.querySelector('em.more');
+    const all = Array.from(box.querySelectorAll('em:not(.more)'));
+    if(!more || !all.length) return;
+    if(!box.clientWidth) return;                 // 面板隐藏时不做判断，切回来会再算
+    all.forEach(el=>{ el.hidden = false; });
+    more.hidden = true;
+    const right = () => box.getBoundingClientRect().right;
+    let cut = all.length;
+    for(let i=0;i<all.length;i++){
+      if(all[i].getBoundingClientRect().right > right() + 0.5){ cut = i; break; }
+    }
+    if(cut >= all.length) return;                // 全都放得下
+    for(let i=cut;i<all.length;i++) all[i].hidden = true;
+    more.hidden = false;
+    // 先把 +N 的文字填进去再量：空的 +N 只有 padding 宽，会低估自己占的位置，
+    // 结果就是少收一个标签、最后 10px 被裁掉半截。
+    let rest = all.length - cut;
+    const setMore = () => { more.textContent = '+' + rest; };
+    setMore();
+    while(cut > 0 && more.getBoundingClientRect().right > right() + 0.5){
+      cut -= 1;
+      all[cut].hidden = true;
+      rest += 1;
+      setMore();
+    }
+    const hiddenTags = all.slice(cut);
+    more.title = '其余 ' + hiddenTags.length + ' 个：' + hiddenTags.map(el=>{
+      const n = el.querySelector('.ct-n');
+      return n ? n.textContent : el.textContent;
+    }).join('、');
+  });
+}
+
+/* ---------- Tab2 涨停晋级 ---------- */
+const CHIP_LIMIT = 24;
+const ST_TXT = {1:'成',2:'炸',0:'败'};
+function pcardHTML(s, firstBoard){
+  const [n,st,tag] = s;
+  const sub = tag ? `<span class="tg">${esc(tag)}</span>` : '';
+  // 首板当日不构成晋级，不标注 成/炸/败（否则会被误读成"首板 100% 晋级"）
+  if(firstBoard){
+    return `<button type="button" class="pcard pcard--first has-chart" data-stock="${esc(n)}" title="${esc(n)} · 今日首封${tag?' · '+esc(tag):''}"><span class="bar"></span><span class="txt"><span class="nm"><span class="nb">${esc(n)}</span></span>${sub}</span></button>`;
+  }
+  const k = st===1 ? 'ok' : st===2 ? 'boom' : 'fail';
+  const full = st===1 ? '晋级成功' : st===2 ? '触板未封' : '未触板';
+  return `<button type="button" class="pcard pcard--${k} has-chart" data-stock="${esc(n)}" title="${esc(n)} · ${full}${tag?' · '+esc(tag):''}"><span class="bar"></span><span class="txt"><span class="nm"><span class="nb">${esc(n)}</span><i class="st st--${k}">(${ST_TXT[st]})</i></span>${sub}</span></button>`;
+}
+function renderPromo(r){
+  const wasPend = isIntraday(r);
+  let promo = Array.isArray(r.promo) ? r.promo : [];
+  // 先记住「当日盘中是否真有实时梯队」：下面回退会把 promo 换成上一日的数据，
+  // 若用替换后的 promo.length 判断，就会把昨天的梯队标成「盘中实时」。
+  const hadLive = promo.length > 0;
+  // 盘中记录还没有晋级梯队：回退到最近一个完整交易日并注明是哪天，
+  // 否则用户盘中打开只看到"当日无晋级梯队数据"，误以为今天没人晋级
+  if(!hadLive && wasPend){
+    const alt = records.find(x=>!isIntraday(x));
+    if(alt){ r = alt; promo = Array.isArray(r.promo) ? r.promo : []; }
+  }
+  $('#pgDate').textContent = r.date;
+  // 盘中已采集到实时晋级梯队 → 标「盘中实时」；仅当盘中无数据回退到上一日时才写「暂显示」
+  $('#pgWeek').textContent = !wasPend ? r.week
+    : (hadLive ? `${r.week}（盘中实时）` : `${r.week}（盘中，暂显示 ${r.date}）`);
+  if(!promo.length){
+    $('#promoRows').innerHTML='<div class="mx-empty">当日无晋级梯队数据</div>';
+    return;
+  }
+  $('#promoRows').innerHTML = promo.map((t,i)=>{
+    const isFirst = t.win === null || t.win === undefined;
+    let ok=0, boom=0, fail=0;
+    t.stocks.forEach(s=>{ if(s[1]===1) ok++; else if(s[1]===2) boom++; else fail++; });
+    const tot = t.stocks.length || 1;
+    const rate = (!isFirst && t.total) ? (t.win/t.total*100) : null;
+
+    let body = '';
+    const rank = s => s===1?0:s===2?1:2;
+    const sorted = [...t.stocks].sort((a,b)=>rank(a[1])-rank(b[1]));
+    const chips = arr => arr.map(s=>pcardHTML(s, isFirst)).join('');
+
+    if(isFirst){
+      // 首板全部是"今日新封"，没有成/炸/败之分，只按上限截断
+      body = `<div class="pg-cards">${chips(sorted.slice(0, CHIP_LIMIT))}</div>`;
+      const rest = sorted.slice(CHIP_LIMIT);
+      if(rest.length){
+        body += `<div class="pg-cards" id="rest-${i}" hidden>${chips(rest)}</div>
+          <button class="pg-more" data-target="rest-${i}" data-n="${rest.length}" data-more="展开其余 ${rest.length} 只 ▾">展开其余 ${rest.length} 只 ▾</button>`;
+      }
+    } else {
+      const alive = sorted.filter(s=>s[1]!==0);
+      const dead  = sorted.filter(s=>s[1]===0);
+      if(alive.length){
+        body += `<div class="pg-cards">${chips(alive)}</div>`;
+        // 「败」默认收起：1进2 常有 30 只左右未触板，全部铺开会把 成/炸 淹没在灰卡里
+        if(dead.length){
+          body += `<div class="pg-cards" id="dead-${i}" hidden>${chips(dead)}</div>
+            <button class="pg-more pg-more--dead" data-target="dead-${i}" data-n="${dead.length}" data-more="展开未晋级 ${dead.length} 只 ▾">展开未晋级 ${dead.length} 只 ▾</button>`;
+        }
+      } else if(dead.length){
+        // 整档全败：不能只剩一个"展开"按钮，先摊开一部分，否则这一档看起来像空的
+        body += `<div class="pg-cards">${chips(dead.slice(0, CHIP_LIMIT))}</div>`;
+        const rest = dead.slice(CHIP_LIMIT);
+        if(rest.length){
+          body += `<div class="pg-cards" id="rest-${i}" hidden>${chips(rest)}</div>
+            <button class="pg-more pg-more--dead" data-target="rest-${i}" data-n="${rest.length}" data-more="展开其余 ${rest.length} 只 ▾">展开其余 ${rest.length} 只 ▾</button>`;
+        }
+      }
+    }
+
+    // 该梯队昨日涨停股今日的表现：晋级率只看"成没成"，均涨/红盘才看得出"怎么死的"
+    const ypA = (t.ypAvg===null||t.ypAvg===undefined) ? null : Number(t.ypAvg);
+    const ypR = (t.ypRed===null||t.ypRed===undefined) ? null : Number(t.ypRed);
+    const ypSeg = (isFirst || ypA===null) ? '' :
+      ` · 均涨 <b class="${ypA>0?'up':ypA<0?'down':''}" style="font-weight:var(--w-data)">${ypA>0?'+':''}${ypA.toFixed(1)}%</b>` +
+      (ypR===null ? '' : ` · 红盘 ${ypR}`);
+
+    // 首板：只报家数，不给晋级率与成/炸/败（当日无晋级结果）
+    const stats = isFirst
+      ? `<div class="pg-lbl">${esc(t.label)}<small>共 ${t.total} 只 · 晋级结果待下一交易日</small></div>
+         <div class="pg-pending">今日首封</div>`
+      : `<div class="pg-lbl">${esc(t.label)}<small>共 ${t.total} 只 · 晋级 ${t.win}/${t.total}${ypSeg}</small></div>
+         <div class="pg-rate${t.total<5?' low':''}"><em>${rate.toFixed(1)}</em><i>%</i></div>
+         <div class="pg-frac"><span class="ok">成 <b>${ok}</b></span><span class="bm">炸 <b>${boom}</b></span><span>败 <b>${fail}</b></span></div>
+         <div class="pg-bar" title="成 ${ok} · 炸 ${boom} · 败 ${fail}"><i class="ok" style="width:${ok/tot*100}%"></i><i class="bm" style="width:${boom/tot*100}%"></i><i class="fl" style="width:${fail/tot*100}%"></i></div>`;
+    return `<section class="pg-tier">
+      <div class="pg-tier-hd">${stats}</div>
+      ${body}
+    </section>`;
+  }).join('');
+  $$('#promoRows .pcard').forEach(c=>{ c.dataset.date = r.date; });
+  warmVisible();
+}
+
+/* ---------- Tab3 连板天梯 / Tab4 概念热度：最近 10 个交易日 ---------- */
+// 面板隐藏时 clientWidth 为 0，因此量始终可见的 .panel；按可用宽度降级列数，避免横向滚动条
+function matrixDays(){
+  const avail = Math.max(0, ($('.panel')?.clientWidth || window.innerWidth - 420) - 2);
+  const n = Math.max(4, Math.min(MX_MAX_DAYS, Math.floor(avail / MX_MIN_COL)));
+  return records.slice(0, n).reverse();
+}
+function mxHeadHTML(days, label){
+  return `<th class="lbl">${label}</th>` + days.map(r=>`<th><b>${r.date.slice(5)}</b><small>${esc(r.week||'')}</small></th>`).join('');
+}
+function renderLadder(days){
+  $('#mxLadderHead').innerHTML = mxHeadHTML(days, '连板高度');
+  if(!days.length){
+    $('#mxLadderBody').innerHTML='<tr><td><div class="mx-empty">暂无连板数据</div></td></tr>';
+    $('#mxLadderFoot').innerHTML='';
+    return;
+  }
+  const byLv = new Map();          // 板数 -> { date -> [{n,tag}] }
+  let maxLv = 2;
+  days.forEach(r=>{
+    (Array.isArray(r.lianbanList)?r.lianbanList:[]).forEach(([n,lb,tag])=>{
+      if(!Number.isFinite(lb)) return;
+      maxLv = Math.max(maxLv, lb);
+      if(!byLv.has(lb)) byLv.set(lb, {});
+      const m = byLv.get(lb);
+      (m[r.date] = m[r.date] || []).push({n, tag});
+    });
+  });
+  const rows = [];
+  for(let lv=maxLv; lv>=2; lv--){
+    const m = byLv.get(lv) || {};
+    let lvTotal = 0;
+    const cells = days.map(r=>{
+      const list = m[r.date] || [];
+      lvTotal += list.length;
+      if(!list.length) return '<td><div class="lbc"><span class="none">—</span></div></td>';
+      const top = r.lb === lv;
+      // 全量展示该格个股名；行高不写死，由内容（名字行数）撑开，
+      // 1 只的行压到最小，多的行自然变高，格子之间的高度差就是家数信息。
+      const h = list.map(x=>`<span class="has-chart${top?' top':''}" data-stock="${esc(x.n)}" data-date="${r.date}" title="${esc(x.n)}${x.tag?' · '+esc(x.tag):''}">${esc(x.n)}</span>`).join('');
+      return `<td><div class="lbc">${h}</div></td>`;
+    }).join('');
+    rows.push(`<tr class="${lv===maxLv?'hi':''}"><td class="lbl"><b>${lv} 板</b><small>${lvTotal} 只</small></td>${cells}</tr>`);
+  }
+  $('#mxLadderBody').innerHTML = rows.join('');
+  const foot = days.map(r=>{
+    const c = (Array.isArray(r.lianbanList)?r.lianbanList:[]).length;
+    const lbTxt = Number.isFinite(r.lb) ? r.lb : '—';
+    return `<td><span style="color:var(--m-hot)">${lbTxt}</span><span style="color:var(--tx3);font-weight:500"> 板 · </span>${c}</td>`;
+  }).join('');
+  $('#mxLadderFoot').innerHTML = `<tr><td class="lbl">最高板 / 家数</td>${foot}</tr>`;
+}
+/* 概念热度默认只看「题材」：三季报增长/回购/中标这类公告标签按家数能排进前几，
+   但它们不是主线，会把存储芯片、算力租赁挤下去。切「全部」可看原始口径。 */
+let heatMode = 'theme';
+function heatSrc(r){
+  const all = heatListOf(r);
+  return heatMode === 'all' ? all : all.filter(c=>!isAnnounce(c[0]));
+}
+function syncHeatFilter(days){
+  const box = $('#heatFilter');
+  if(!box) return;
+  const count = m => {
+    const s = new Set();
+    days.forEach(r=>heatListOf(r).forEach(([n])=>{ if(m==='all' || !isAnnounce(n)) s.add(n); }));
+    return s.size;
+  };
+  box.querySelectorAll('button').forEach(b=>{
+    const m = b.dataset.m;
+    b.classList.toggle('on', m===heatMode);
+    const i = b.querySelector('i');
+    if(i) i.textContent = count(m);
+  });
+}
+/* 悬浮明细数据：key = `${date}|${概念}` -> {concept,date,cnt,members}。
+   renderHeat 每次重建；members 为 null 表示该日名单未采集（前端降级提示）。 */
+let heatTips = new Map();
+function renderHeat(days){
+  syncHeatFilter(days);
+  $('#mxHeatHead').innerHTML = mxHeadHTML(days, '题材概念');
+  if(!days.length){
+    $('#mxHeatBody').innerHTML='<tr><td><div class="mx-empty">暂无概念热度数据</div></td></tr>';
+    return;
+  }
+  const agg = new Map();   // name -> { d: {date: {n, names}}, total, dayCnt }
+  const dayMax = {};
+  days.forEach(r=>{
+    heatSrc(r).forEach(item=>{
+      const [name, n] = item;
+      const names = Array.isArray(item[2]) ? item[2] : null;
+      let o = agg.get(name);
+      if(!o){ o = {d:{}, total:0, dayCnt:0}; agg.set(name, o); }
+      o.d[r.date] = {n, names}; o.total += n; o.dayCnt += 1;
+      dayMax[r.date] = Math.max(dayMax[r.date]||1, n);
+    });
+  });
+  const list = [...agg.entries()]
+    .sort((a,b)=> b[1].dayCnt-a[1].dayCnt || b[1].total-a[1].total)
+    .slice(0, HEAT_TOP + 2);
+  if(!list.length){
+    $('#mxHeatBody').innerHTML='<tr><td><div class="mx-empty">暂无概念热度数据</div></td></tr>';
+    return;
+  }
+  heatTips = new Map();
+  $('#mxHeatBody').innerHTML = list.map(([name,o],i)=>{
+    const cells = days.map(r=>{
+      const v = o.d[r.date];
+      if(!v) return '<td class="hc"><div class="hcell zero">—</div></td>';
+      const ratio = Math.min(1, v.n / (dayMax[r.date]||1));
+      const alpha = (0.04 + 0.30*Math.pow(ratio, 1.35)).toFixed(2);
+      const key = r.date + '|' + name;
+      heatTips.set(key, {concept:name, date:r.date, cnt:v.n, members:v.names});
+      return `<td class="hc" style="background:rgba(220,38,38,${alpha})" data-tk="${esc(key)}"><div class="hcell${ratio>=0.8?' hot':''}">${v.n}</div></td>`;
+    }).join('');
+    return `<tr><td class="lbl"><div class="hl-row"><span class="hl-rk">${i+1}</span><span class="hl-nm" title="${esc(name)}">${esc(name)}</span><span class="hl-d" title="近 ${days.length} 个交易日中有 ${o.dayCnt} 天进榜">${o.dayCnt}天</span></div></td>${cells}</tr>`;
+  }).join('');
+}
+/* ---------- 概念热度悬浮明细卡：数字格 hover 弹出该题材当日涨停个股 ---------- */
+const heatTipEl = document.createElement('div');
+heatTipEl.id = 'heatTip';
+heatTipEl.setAttribute('role', 'tooltip');
+document.body.appendChild(heatTipEl);
+let tipTd = null;
+/* 悬浮卡数据源：热度页渲染时已把名单放进 heatTips；
+   每日数据表格/左侧 Top5 没经过那次渲染，按 key（日期|题材）现场查 records。
+   key 里必然带 '|'（题材名不含该字符），找不到就当作无名单降级。 */
+function heatInfoFor(key){
+  let info = heatTips.get(key);
+  if(info) return info;
+  const i = key.indexOf('|');
+  if(i < 0) return null;
+  const date = key.slice(0, i), name = key.slice(i + 1);
+  const r = records.find(x=>x.date === date);
+  if(!r) return null;
+  const item = heatListOf(r).find(x=>x[0] === name);
+  if(!item) return null;
+  return {concept:name, date, cnt:item[1], members:Array.isArray(item[2]) ? item[2] : null};
+}
+function hideHeatTip(){
+  tipTd = null;
+  heatTipEl.classList.remove('show');
+}
+function showHeatTip(td){
+  const info = heatInfoFor(td.dataset.tk);
+  if(!info){ hideHeatTip(); return; }
+  const names = Array.isArray(info.members) ? info.members : [];
+  heatTipEl.innerHTML =
+    `<div class="ht-hd"><span class="ht-nm">${esc(info.concept)}</span>` +
+    `<span class="ht-dt">${info.date.slice(5)}</span>` +
+    `<span class="ht-n">${info.cnt} 只涨停</span></div>` +
+    (names.length
+      ? `<div class="ht-grid">${names.map(n=>`<span class="ht-chip">${esc(n)}</span>`).join('')}</div>`
+      : `<div class="ht-none">该日个股名单未采集</div>`);
+  heatTipEl.classList.add('show');
+  // 优先出现在格子右侧，放不下翻到左侧；上下夹到视口内
+  const r = td.getBoundingClientRect();
+  const w = heatTipEl.offsetWidth, h = heatTipEl.offsetHeight;
+  let x = r.right + 10;
+  if(x + w > window.innerWidth - 8) x = Math.max(8, r.left - w - 10);
+  // 名单可能比视口还高，夹取时先保住顶部 8px，避免 top 变负数把标题顶出屏幕
+  let y = Math.max(8, Math.min(r.top - 8, window.innerHeight - h - 8));
+  heatTipEl.style.left = x + 'px';
+  heatTipEl.style.top = y + 'px';
+}
+/* 全局委托：所有带 data-tk 的元素（热度页数字格、每日数据题材标签、
+   左侧 Top5 行）hover 都弹明细卡；移出或页面滚动即隐藏；触屏点按同样可看 */
+document.addEventListener('mouseover', e=>{
+  const t = e.target.closest('[data-tk]');
+  if(t){
+    if(t !== tipTd){ tipTd = t; showHeatTip(t); }
+    return;
+  }
+  // 指针移进悬浮卡本身不隐藏（方便选中复制个股名）
+  if(tipTd && !heatTipEl.contains(e.target)) hideHeatTip();
+});
+document.addEventListener('click', e=>{
+  const t = e.target.closest('[data-tk]');
+  if(t){ tipTd = t; showHeatTip(t); return; }
+  // 触屏没有 mouseover/mouseout：点空白处要能关掉，否则卡片会一直挂在屏幕上
+  if(tipTd && !heatTipEl.contains(e.target)) hideHeatTip();
+});
+document.addEventListener('scroll', hideHeatTip, true);
+/* 个股 K 线预热：后端收到一只就要去上游拉一次日K+分时（新浪 qfq，全局限速 0.25s）。
+   原先「切到矩阵类标签页就把当前面板里最多 100 只全丢过去」，等于用户还没悬停就
+   先烧掉上百个上游请求、十几秒限速排队——绝大多数标的永远没人悬停。
+   改成「只预热当前视口里真看得见的那几只 + 本次会话不重复」，成本跟着用户实际浏览走；
+   视口外的还有滚动兜底，真正的悬停本身也有 prefetch 直连。 */
+const PRIMED = new Set();
+let warmT;
+/* 悬停卡改成「新浪静态图」后，这里不再预热 K 线（那是几十只票 × 两次上游请求 + pandas），
+   只把视口内这批股票的「名称 → 代码 + 快照」一次查完：一个请求、不到 2KB，之后悬停零等待。 */
+function warmVisible(delay = 1200){
+  clearTimeout(warmT);
+  warmT = setTimeout(()=>{
+    const names = [];
+    for(const el of $$('.tabpane.active [data-stock]')){
+      const n = el.dataset.stock;
+      if(!n || PRIMED.has(n)) continue;
+      const r = el.getBoundingClientRect();
+      if(!r.width || r.bottom < 0 || r.top > innerHeight) continue;   // 面板隐藏(width=0)或不在视口
+      PRIMED.add(n);
+      names.push(n);
+      if(names.length >= 40) break;
+    }
+    if(names.length && KP) KP.primePeek(names);
+  }, delay);
+}
+// 滚动到新的个股再补预热（同一批只发一次，视口不动的滚动不会产生请求）
+document.addEventListener('scroll', ()=>warmVisible(600), {passive:true, capture:true});
+function renderMatrices(){
+  const days = matrixDays();
+  const label = `近 ${days.length} 日`;
+  $('#ladderRange').textContent = label;
+  $('#heatRange').textContent = label;
+  renderLadder(days);
+  renderHeat(days);
+  warmVisible();
+}
+
+/* ---------- 交互 ---------- */
+function scrollToSelected(){
+  const tr=$('#tbody').querySelector('tr.selected');
+  if(!tr) return;
+  const wrap=$('#tableWrap'), headH=44;
+  const top=tr.offsetTop;
+  if(top < wrap.scrollTop+headH) wrap.scrollTop = top-headH;
+  else if(top+tr.offsetHeight > wrap.scrollTop+wrap.clientHeight) wrap.scrollTop = top+tr.offsetHeight-wrap.clientHeight;
+}
+function writeHashState(){
+  if(!records.length) return;
+  try{
+    const q=new URLSearchParams();
+    q.set('tab', $('.tab.active')?.dataset.tab || 'daily');
+    // 日期不再写进 hash：带日期刷新会让用户永远停在旧数据上，
+    // "看哪一天"是临时动作，刷新回到最新才符合预期
+    history.replaceState(null,'','#'+q.toString());
+  }catch(e){ /* file:// 下允许失败，不影响功能 */ }
+}
+function activateTab(t, focus=true, persist=true){
+  $$('.tab').forEach(x=>{
+    const on = x===t;
+    x.classList.toggle('active', on);
+    x.setAttribute('aria-selected', on?'true':'false');
+    x.tabIndex = on?0:-1;
+  });
+  $$('.tabpane').forEach(p=>p.classList.remove('active'));
+  const key = t.dataset.tab;
+  $('#pane-'+key).classList.add('active');
+  if(focus) t.focus();
+  if(persist) writeHashState();
+  warmVisible();
+  if(key === 'daily'){ requestAnimationFrame(fitConceptTags); renderTable(); }
+  // 移动端：切 Tab 后内容常在首屏之外（左栏详情很长），用户点了没反应。
+  // 这里把内容顶部滚到吸顶标签栏下沿；已经能看见就不动，避免多余的跳动。
+  if(focus && window.innerWidth<=960){
+    const pane=$('#pane-'+key), tb=$('.tabbar');
+    if(pane && tb){
+      const barH = tb.offsetHeight;
+      const rel = pane.getBoundingClientRect().top;
+      if(rel > barH + 60 || rel < 0){
+        const top = rel + window.scrollY - barH - 6;
+        window.scrollTo({top: Math.max(0, top), behavior:'smooth'});
+      }
+    }
+  }
+}
+function selectDay(idx, persist=true){
+  if(idx<0 || idx>=records.length) return;
+  current=idx;
+  anchors.date = records[idx] ? records[idx].date : null;
+  // 键盘 ←/→、日期选择器选中跨页日期时自动翻到对应页；
+  // 选中日不在当前筛选月内时，清除月份筛选显示全部
+  // 选中行不在当前页时，让它成为首行（键盘 ←/→ 与日历跨页选择都走这里）
+  if(idx < viewStart || idx >= viewStart + PAGE_SIZE) viewStart = idx;
+  renderDetail(records[idx],idx);
+  renderTable();
+  // 天梯/热度矩阵恒为「最近 15 个交易日」，与选中日无关；
+  // 这里原来每次都重建，既浪费一次 DOM 重建，又把它俩的滚动位置清掉。
+  scrollToSelected();
+  if(persist) writeHashState();
+}
+async function stepDay(delta){
+  let ni = current + delta;
+  // delta>0 是「往前翻」（更早的交易日，对应 ‹ 与 ←）。走到已加载的末尾时先按需拉一段历史
+  if(delta > 0 && ni >= records.length - 1 && nextOlderYm()){
+    const added = await ensureOlder();
+    if(!added) return;
+    ni = current + delta;
+  }
+  if(ni<0 || ni>=records.length) return;
+  selectDay(ni);
+}
+function restoreState(){
+  const q = new URLSearchParams(location.hash.replace(/^#/,''));
+  const tab = q.get('tab');
+  if(tab){
+    // 旧链接兼容：review → daily、feedback → chat（tab key 已改名）
+    const key = tab === 'review' ? 'daily' : tab;
+    const t=Array.from(document.querySelectorAll('.tab'))
+      .find(x => x.dataset.tab === key);
+    if(t) activateTab(t,false,false);
+  }
+}
+
+$$('.tab').forEach(t=>t.addEventListener('click',()=>activateTab(t)));
+$('.tabbar').addEventListener('keydown',e=>{
+  const tabs=$$('.tab'), i=tabs.indexOf(document.activeElement);
+  if(i<0) return;
+  let ni=null;
+  if(e.key==='ArrowRight') ni=(i+1)%tabs.length;
+  else if(e.key==='ArrowLeft') ni=(i-1+tabs.length)%tabs.length;
+  else if(e.key==='Home') ni=0;
+  else if(e.key==='End') ni=tabs.length-1;
+  if(ni!==null){ e.preventDefault(); activateTab(tabs[ni]); }
+});
+
+$('#pgPrev').addEventListener('click', ()=>{ gotoPage(-1); });
+$('#pgNext').addEventListener('click', ()=>{ gotoPage(1); });
+
+/* 年月选择器：‹› 任意翻年，12 个月九宫格，有数据的天数标在月份下；
+   没数据的月份置灰不可点。「全部月份」回到最新一天。
+   选月份 = 一次定位：该月最后一个交易日成为表格首行，之后翻页不受月份约束。 */
+const MPB=$('#monthPick'), MPOP=$('#mpPop');
+let mpYear = 2026;
+function monthCounts(){
+  // 有月份索引就用索引：它是全量历史的权威计数，选择器才能翻到 2010 年；
+  // 索引缺失（老版本数据）时退化成「只统计已加载的月份」
+  if(MONTHS.length){
+    const c = {};
+    MONTHS.forEach(m=>{ c[m.ym] = m.n; });
+    return c;
+  }
+  const c = {};
+  records.forEach(r=>{ const ym = r.date.slice(0,7); c[ym] = (c[ym]||0) + 1; });
+  return c;
+}
+function renderMonthPop(){
+  const c = monthCounts();
+  let months = '';
+  for(let m=1; m<=12; m++){
+    const ym = `${mpYear}-${String(m).padStart(2,'0')}`;
+    const n = c[ym] || 0;
+    const on = monthFilter === ym;
+    months += `<button type="button" class="mp-m${on?' on':''}${n?'':' empty'}" data-ym="${n?ym:''}" ${n?'':'disabled'} aria-selected="${on}"><b>${m} 月</b>${n?`<i>${n} 天</i>`:'<i>—</i>'}</button>`;
+  }
+  MPOP.innerHTML =
+    `<div class="mp-hd">
+       <button type="button" class="mp-nav" data-y="-1" aria-label="上一年">&lsaquo;</button>
+       <b>${mpYear} 年</b>
+       <button type="button" class="mp-nav" data-y="1" aria-label="下一年">&rsaquo;</button>
+     </div>
+     <div class="mp-grid">${months}</div>
+     <button type="button" class="mp-all${monthFilter?'':' on'}" data-ym="">全部月份<i>${TOTAL_DAYS || records.length} 天</i></button>`;
+}
+function openMonthPop(){
+  if(!records.length) return;
+  const ym = monthFilter || (records[current] ? records[current].date.slice(0,7) : records[0].date.slice(0,7));
+  mpYear = Number(ym.slice(0,4));
+  renderMonthPop();
+  MPOP.hidden = false;
+  MPB.setAttribute('aria-expanded','true');
+  MPB.classList.add('is-open');
+}
+function closeMonthPop(back){
+  if(MPOP.hidden) return;
+  MPOP.hidden = true;
+  MPB.setAttribute('aria-expanded','false');
+  MPB.classList.remove('is-open');
+  if(back) MPB.focus();
+}
+MPB.addEventListener('click', ()=>{ MPOP.hidden ? openMonthPop() : closeMonthPop(); });
+MPOP.addEventListener('click', async e=>{
+  const nav = e.target.closest('.mp-nav');
+  if(nav){
+    // 同日历翻月：重建后旧按钮游离，必须拦截「点外部关闭」误判
+    e.stopPropagation();
+    mpYear += Number(nav.dataset.y);
+    renderMonthPop();
+    return;
+  }
+  const b = e.target.closest('[data-ym]');
+  if(!b || b.classList.contains('empty')) return;
+  const ym = b.dataset.ym || null;
+  // 该月历史还没加载过：先把格子变成「加载中」，拉回来再定位
+  if(ym && !monthReady(ym)){
+    if(b.dataset.busy) return;
+    b.dataset.busy = '1';
+    const old = b.innerHTML;
+    b.innerHTML = `<b>${Number(ym.slice(5))} 月</b><i>加载中…</i>`;
+    const added = await loadMonth(ym);
+    delete b.dataset.busy;
+    if(!added && !monthReady(ym)){
+      b.innerHTML = `<b>${Number(ym.slice(5))} 月</b><i>加载失败</i>`;
+      setTimeout(()=>{ b.innerHTML = old; }, 1400);
+      return;
+    }
+  }
+  monthFilter = ym;
+  // 该月最后一个交易日 = records（日期倒序）里属于该月的第一条，置为视图首行
+  viewStart = monthFilter ? Math.max(0, records.findIndex(r=>r.date.slice(0,7)===monthFilter)) : 0;
+  closeMonthPop(true);
+  renderTable();
+});
+document.addEventListener('click', e=>{
+  if(!e.target.closest('.mp-wrap')) closeMonthPop();
+});
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape' && !MPOP.hidden){ e.stopPropagation(); closeMonthPop(true); }
+});
+
+$('#promoRows').addEventListener('click', e=>{
+  const b=e.target.closest('.pg-more');
+  if(!b) return;
+  const box=document.getElementById(b.dataset.target);
+  if(!box) return;
+  const open = box.hidden;
+  box.hidden = !open;
+  b.textContent = open ? '收起 ▴' : (b.dataset.more || `展开其余 ${b.dataset.n} 只 ▾`);
+});
+
+$('#heatFilter').addEventListener('click', e=>{
+  const b = e.target.closest('button[data-m]');
+  if(!b || b.dataset.m === heatMode) return;
+  heatMode = b.dataset.m;
+  renderHeat(matrixDays());
+});
+
+/* 交易日日历：任意年/月/日可选（«»翻年、‹›翻月），交易日标圆点。
+   点到非交易日/未采集日自动吸附到最近的一个已采集交易日（往前找，
+   早于最早数据日则取最早一天）——不会出现"选了个没数据的日期"。
+   键盘：←→ 移一天、↑↓ 移一周、PageUp/PageDown 翻月、Home/End 跳最新/最早、Enter 选中。 */
+const DP=$('#datePicker'), DPOP=$('#dpPop');
+let calY=2026, calM=1, calCursor='';
+const dsToDate = ds => { const [y,m,d]=ds.split('-').map(Number); return new Date(y, m-1, d); };
+const dateToDs = dt => `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+function dpSnap(ds){
+  let idx = records.findIndex(r=>r.date===ds);
+  if(idx >= 0) return idx;
+  // records 是日期**倒序**：从头往后扫，第一个「≤ 目标日期」的就是目标之前最近的那个交易日。
+  // （原先从末尾往前扫并直接 return，命中的是最早一天——点周末会跳到 1990 年。）
+  for(let k = 0; k < records.length; k++){
+    if(records[k].date <= ds) return k;
+  }
+  return Math.max(0, records.length - 1);   // 比最早一条还早 → 落到最早一天
+}
+/* 日历上的「交易日圆点」：已加载的看 records，没加载的看月份索引——
+   否则翻到 2019 年，满屏一个点都没有，看着像那段时间没采集。 */
+function hasDataDs(ds, have){
+  if(have && have.has(ds)) return true;
+  return (MONTHS_MAP[ds.slice(0,7)] || 0) > 0;
+}
+function renderCal(){
+  const first = new Date(calY, calM-1, 1);
+  const offset = (first.getDay() + 6) % 7;   // 周一开头
+  const start = new Date(calY, calM-1, 1 - offset);
+  const selDate = records[current] ? records[current].date : '';
+  const latest = records[0] ? records[0].date : '';
+  const have = new Set(records.map(r=>r.date));
+  let cells = '';
+  for(let k = 0; k < 42; k++){
+    const dt = new Date(start.getFullYear(), start.getMonth(), start.getDate() + k);
+    const ds = dateToDs(dt);
+    const out = dt.getMonth() !== calM-1;
+    const has = hasDataDs(ds, have);
+    const cls = ['dp-day'];
+    if(out) cls.push('out');
+    if(has) cls.push('has');
+    if(ds === selDate) cls.push('sel');
+    else if(ds === latest) cls.push('newest');
+    if(ds === calCursor) cls.push('cur');
+    cells += `<button type="button" class="${cls.join(' ')}" data-d="${ds}" tabindex="${ds===calCursor?0:-1}" aria-label="${ds}${has?' · 交易日':''}">${dt.getDate()}<i></i></button>`;
+  }
+  DPOP.innerHTML =
+    `<div class="dp-hd">
+       <button type="button" class="dp-nav" data-nav="y-" aria-label="上一年">&laquo;</button>
+       <button type="button" class="dp-nav" data-nav="m-" aria-label="上一月">&lsaquo;</button>
+       <b>${calY} 年 ${calM} 月</b>
+       <button type="button" class="dp-nav" data-nav="m+" aria-label="下一月">&rsaquo;</button>
+       <button type="button" class="dp-nav" data-nav="y+" aria-label="下一年">&raquo;</button>
+     </div>
+     <div class="dp-week"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>
+     <div class="dp-grid">${cells}</div>`;
+}
+function openDatePop(){
+  if(!records.length) return;
+  const base = records[current] ? records[current].date : records[0].date;
+  calY = Number(base.slice(0,4)); calM = Number(base.slice(5,7));
+  calCursor = base;
+  renderCal();
+  DPOP.hidden = false;
+  DP.setAttribute('aria-expanded','true');
+  DP.classList.add('is-open');
+}
+function closeDatePop(back){
+  if(DPOP.hidden) return;
+  DPOP.hidden = true;
+  DP.setAttribute('aria-expanded','false');
+  DP.classList.remove('is-open');
+  if(back) DP.focus();
+}
+function calNav(action){
+  if(action==='m-'){ calM--; if(calM<1){ calM=12; calY--; } }
+  else if(action==='m+'){ calM++; if(calM>12){ calM=1; calY++; } }
+  else if(action==='y-') calY--;
+  else if(action==='y+') calY++;
+  renderCal();
+}
+DP.addEventListener('click', ()=>{ DPOP.hidden ? openDatePop() : closeDatePop(); });
+DPOP.addEventListener('click', async e=>{
+  const nav = e.target.closest('.dp-nav');
+  if(nav){
+    // 翻月会重建弹层内容（旧按钮变游离节点），必须拦住冒泡——
+    // 否则 document 级「点外部关闭」会误判为外部点击，弹层立刻关闭，
+    // 看起来就是箭头点了没反应
+    e.stopPropagation();
+    calNav(nav.dataset.nav);
+    return;
+  }
+  const day = e.target.closest('.dp-day');
+  if(!day) return;
+  const ds = day.dataset.d;
+  const ym = ds.slice(0,7);
+  // 点到的日期属于「还没加载的历史月份」：先补那一段，再定位。
+  // 不补的话 dpSnap 只能在已加载范围里凑一个附近的交易日，落点会差很远。
+  if(!records.some(r=>r.date===ds) && (MONTHS_MAP[ym]||0) > 0 && !monthReady(ym)){
+    if(day.dataset.busy) return;
+    day.dataset.busy = '1';
+    await loadMonth(ym, {reanchor:true});
+  }
+  const idx = dpSnap(ds);
+  closeDatePop(true);
+  selectDay(idx);
+});
+DPOP.addEventListener('keydown', e=>{
+  const step = {ArrowLeft:-1, ArrowRight:1, ArrowUp:-7, ArrowDown:7}[e.key];
+  if(step !== undefined){
+    e.preventDefault();
+    const dt = dsToDate(calCursor);
+    dt.setDate(dt.getDate() + step);
+    calCursor = dateToDs(dt);
+    calY = dt.getFullYear(); calM = dt.getMonth() + 1;
+    renderCal();
+    const cur = DPOP.querySelector('.dp-day.cur');
+    if(cur) cur.focus();
+    return;
+  }
+  if(e.key === 'PageUp' || e.key === 'PageDown'){
+    e.preventDefault();
+    calNav(e.key === 'PageUp' ? 'm-' : 'm+');
+    const cur = DPOP.querySelector('.dp-day.cur');
+    if(cur) cur.focus();
+    return;
+  }
+  if(e.key === 'Home' || e.key === 'End'){
+    e.preventDefault();
+    const r = e.key === 'Home' ? records[0] : records[records.length-1];
+    calCursor = r.date; calY = Number(r.date.slice(0,4)); calM = Number(r.date.slice(5,7));
+    renderCal();
+    const cur = DPOP.querySelector('.dp-day.cur');
+    if(cur) cur.focus();
+    return;
+  }
+  if(e.key === 'Enter' || e.key === ' '){
+    const cur = DPOP.querySelector('.dp-day.cur');
+    if(cur){ e.preventDefault(); const idx = dpSnap(calCursor); closeDatePop(true); selectDay(idx); }
+  }
+});
+document.addEventListener('click', e=>{
+  if(!e.target.closest('.date-picker-wrap')) closeDatePop();
+});
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape' && !DPOP.hidden){ e.stopPropagation(); closeDatePop(true); }
+});
+$('#backToday').addEventListener('click',()=>selectDay(0));
+$('#navPrev').addEventListener('click',()=>stepDay(1));
+$('#navNext').addEventListener('click',()=>stepDay(-1));
+$('#tbody').addEventListener('click',e=>{
+  const tr=e.target.closest('tr[data-idx]');
+  if(!tr) return;
+  selectDay(Number(tr.dataset.idx));
+  // 窄屏上左栏在视口外，点了行没有任何可见反馈，补一条轻提示
+  if(window.innerWidth<=960){
+    const r = records[current];
+    if(r) showToast(`已切换到 ${r.date} ${r.week}`);
+  }
+});
+$('#tbody').addEventListener('keydown',e=>{
+  if(e.key!=='Enter' && e.key!==' ') return;
+  const tr=e.target.closest('tr[data-idx]');
+  if(tr){ e.preventDefault(); selectDay(Number(tr.dataset.idx)); }
+});
+
+let rzT;
+window.addEventListener('resize', ()=>{
+  clearTimeout(rzT);
+  rzT=setTimeout(()=>{ if(!records.length) return; renderTable(); renderMatrices(); }, 160);
+});
+
+/* 方向键翻交易日：← 更早、→ 更新，与日期选择器两侧箭头一致。
+   在可交互控件、标签栏和可横向滚动的矩阵里不接管，避免抢掉原生行为。 */
+document.addEventListener('keydown', e=>{
+  if(e.key!=='ArrowLeft' && e.key!=='ArrowRight') return;
+  if(e.altKey||e.ctrlKey||e.metaKey||e.shiftKey) return;
+  const t = e.target;
+  if(t && t.closest && t.closest('button,input,select,textarea,a,.tabs,.mx-scroll,.promo-wrap,#kp')) return;
+  e.preventDefault();
+  stepDay(e.key==='ArrowLeft' ? 1 : -1);
+});
+
+/* 窄屏：左栏默认折叠成四条摘要，首屏直接看到数据；桌面端不显示该按钮 */
+const DETAIL = $('#detail'), DTOGGLE = $('#detailToggle');
+function setDetailMini(on){
+  DETAIL.classList.toggle('is-mini', on);
+  DTOGGLE.setAttribute('aria-expanded', on ? 'false' : 'true');
+  const lb = DTOGGLE.querySelector('span');
+  if(lb) lb.textContent = on ? '详情' : '收起';
+}
+DTOGGLE.addEventListener('click', ()=>setDetailMini(!DETAIL.classList.contains('is-mini')));
+/* 手机单栏模式下卡片永远是完整的——折叠摘要本来是为了「先看到右边表格」，
+   手机端没有表格可看了，折起来只剩四条数字反而没意义 */
+function isPhoneView(){
+  return window.matchMedia('(max-width:719px)').matches
+    && !document.documentElement.classList.contains('pc-view');
+}
+let narrowNow = window.innerWidth <= 960 && !isPhoneView();
+setDetailMini(narrowNow);
+window.addEventListener('resize', ()=>{
+  const n = window.innerWidth <= 960 && !isPhoneView();
+  if(n !== narrowNow){ narrowNow = n; setDetailMini(n); }
+});
+
+
+/* ---------- 手机单栏：把日期控件搬进卡头 ----------
+   桌面端「‹ 日期选择器 ›」挂在右栏标签行；手机没有标签行，整块搬进详情卡第一行并吸顶。
+   搬的是**同一个 DOM 节点**（不是复制），dpPop 的定位、aria 关系、已绑事件全部原样保留；
+   宽度回到 720px 以上时按原父节点/原位置放回。
+   `.d-date-row` 也必须从 `.d-head` 里提出来——sticky 的作用范围被父盒子裁住，
+   留在一个 60px 高的 .d-head 里，滚过一屏就失效了。 */
+const PHONE = (()=>{
+  const ROOT = document.documentElement, LS = 'a3x1.pcView';
+  const MQ = window.matchMedia('(max-width:719px)');
+  const row = $('.d-date-row'), nav = $('.date-nav');
+  const rowHome = row.parentNode, rowNext = row.nextSibling;
+  const navHome = nav.parentNode, navNext = nav.nextSibling;
+  const pcBtn = $('#phPc'), backBtn = $('#phBack');
+  let moved = false;
+
+  const on = ()=> MQ.matches && !ROOT.classList.contains('pc-view');
+
+  function relayout(){
+    narrowNow = window.innerWidth <= 960 && !isPhoneView();
+    setDetailMini(narrowNow);
+  }
+
+  function sync(){
+    const p = on();
+    if(p === moved){ if(p) relayout(); return; }
+    closeDatePop();
+    if(p){
+      DETAIL.insertBefore(row, DETAIL.firstChild);
+      row.appendChild(nav);
+    }else{
+      rowHome.insertBefore(row, rowNext);
+      navHome.insertBefore(nav, navNext);
+    }
+    moved = p;
+    relayout();
+    // 切视图不改窗口尺寸，分时图得靠这条事件重新量一次容器
+    document.dispatchEvent(new CustomEvent('a3x1:relayout'));
+  }
+
+  function setPc(v){
+    ROOT.classList.toggle('pc-view', v);
+    try{ localStorage.setItem(LS, v ? '1' : '0'); }catch(e){ /* 隐私模式下忽略 */ }
+    sync();
+    window.scrollTo(0, 0);
+    // 手机端平时不加载 ECharts（分时整块不显示）。切到电脑视图才需要，这时补加载，
+    // 加载完再触发一次 relayout，把之前"组件加载中"的分时图真正画出来
+    if(v) loadEcharts().then(ok=>{ if(ok) document.dispatchEvent(new CustomEvent('a3x1:relayout')); });
+  }
+
+  pcBtn.addEventListener('click', ()=>setPc(true));
+  backBtn.addEventListener('click', ()=>setPc(false));
+  try{ if(localStorage.getItem(LS) === '1') ROOT.classList.add('pc-view'); }catch(e){}
+  relayout();   // 类是在上面才加的，先按最终状态重算一次「折叠/展开」
+  sync();
+  MQ.addEventListener('change', sync);
+  return {sync, setPc};
+})();
+
+
+
+/* ---------- 核心指数：自选 6 个 + 排序（仅保存在当前浏览器） ----------
+   可选集合里既有 A 股指数也有港股/海外指数，key 与后端 backend/indices.py 的
+   INDEX_META 一一对应，改 key 会导致本机旧配置失效（会自动回落到默认 6 个）。
+   配置只进 localStorage：不同访客各自定制，互不影响。 */
+const IDX_META = [
+  {key:'sh',  label:'上证指数', short:'上证',    market:'cn'},
+  {key:'sz',  label:'深证成指', short:'深成',    market:'cn'},
+  {key:'cy',  label:'创业板指', short:'创业板',  market:'cn'},
+  {key:'kc',  label:'科创50',   short:'科创50',  market:'cn'},
+  {key:'hs',  label:'沪深300',  short:'沪深300', market:'cn'},
+  {key:'z5',  label:'中证500',  short:'中证500', market:'cn'},
+  {key:'z1',  label:'中证1000', short:'中证1000',market:'cn'},
+  {key:'hk',  label:'恒生指数', short:'恒生',    market:'hk'},
+  {key:'hkt', label:'恒生科技', short:'恒科',    market:'hk'},
+  {key:'ks',  label:'韩国综合', short:'KOSPI',   market:'kr'},
+  {key:'ixic',label:'纳斯达克', short:'纳指',    market:'us'},
+];
+const IDX_MAP = Object.fromEntries(IDX_META.map(m=>[m.key,m]));
+const IDX_DEFAULT = ['sh','sz','cy','kc','hs','z1'];
+const IDX_MKT = {cn:'A股', hk:'港股', kr:'韩股', us:'美股'};
+
+const IDX = (()=>{
+  const LS_SEL = 'a3x1.idxSel', LS_PICK = 'a3x1.idxPick';
+  let spot = {};          // 实时快照 {key:[点位,涨跌幅]}，来自 /api/indices
+  let spotAt = 0, inflight = null;
+
+  function readSel(){
+    try{
+      const a = JSON.parse(localStorage.getItem(LS_SEL) || '[]');
+      if(Array.isArray(a) && a.length === 6 && new Set(a).size === 6 && a.every(k=>IDX_MAP[k]))
+        return a;
+    }catch(e){}
+    return IDX_DEFAULT.slice();
+  }
+  let sel = readSel();
+  let pick = localStorage.getItem(LS_PICK) || 'sh';
+  if(!IDX_MAP[pick]) pick = 'sh';
+
+  function save(){
+    try{
+      localStorage.setItem(LS_SEL, JSON.stringify(sel));
+      localStorage.setItem(LS_PICK, pick);
+    }catch(e){}
+  }
+
+  /* 最新交易日的港股/韩股与 A 股同时段交易，实时值更贴近当下；
+     美股按「前一美股交易日收盘」展示——它当天 21:30（北京时间）才开盘，
+     把当晚走势提前挂到这天 A 股复盘里属于未来数据。 */
+  function value(key, r, isLatest){
+    const f = {sh:'sh', sz:'sz', cy:'cy', kc:'kc', hs:'hs', z5:'z5', z1:'z1'}[key];
+    if(f) return [r[f], r[f+'P']];
+    const m = IDX_MAP[key];
+    if(isLatest && m.market !== 'us' && spot[key]) return spot[key];
+    const e = (r.ext || {})[key];
+    return e ? [e[0], e[1]] : [null, null];
+  }
+
+  function empty(){
+    return IDX_DEFAULT.map(k=>`<div class="idx-item" style="visibility:hidden"></div>`).join('');
+  }
+
+  function render(r, idx){
+    // 只有「这条记录的日期就是今天」才用实时快照。周末或开盘前 records[0] 是上一交易日，
+    // 单看 idx===0 会把今天的实时点位挂到昨天的日期上（日期与数值对不上）。
+    const n = new Date();
+    const today = `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
+    const isLatest = idx === 0 && r.date === today;
+    const html = sel.map(k=>{
+      const m = IDX_MAP[k];
+      const [v,p] = value(k, r, isLatest);
+      const on = k === pick;
+      const note = m.market === 'us' ? ' · 前一美股交易日收盘' : '';
+      return `<div class="idx-item${on?' on':''}" data-k="${k}" role="button" tabindex="0"
+        aria-pressed="${on}" title="${m.label}${note} · 点击查看分时">
+        <span class="idx-name">${m.short}</span>
+        <div class="idx-val">${v==null?'—':num2(v)}</div>
+        <div class="idx-pct ${cls(p||0)}"><i>${p>0?'▲':p<0?'▼':'—'}</i>${p==null?'—':sign(p)}</div>
+      </div>`;
+    }).join('');
+    $('#dIndices').innerHTML = html;
+  }
+
+  function ensureSpot(){
+    if(Date.now() - spotAt < 60000) return Promise.resolve(spot);
+    if(inflight) return inflight;
+    inflight = fetch('api/indices').then(r=>r.json()).then(d=>{
+      if(d && d.spot){ spot = d.spot; spotAt = Date.now(); }
+      return spot;
+    }).catch(()=>spot).finally(()=>{ inflight = null; });
+    return inflight;
+  }
+
+  /* ---- 设置弹层：勾选恰好 6 个 + 调整顺序 ----
+     build 只在打开时跑一次，之后所有交互只做 sync：原地重排节点、改文案与禁用态。
+     不重建 innerHTML 的原因是「点复选框会连带关掉弹层」——重建会在事件派发途中
+     把复选框从文档里摘掉，气泡链断开后落点又会被 document 的「点外部关闭」当成
+     外部点击；顺带也会丢掉列表滚动位置与焦点。 */
+  let draft = [], chosen = new Set();
+  const pop = $('#idxPop'), btn = $('#idxSetBtn');
+
+  function rowHtml(k){
+    const m = IDX_MAP[k], on = chosen.has(k);
+    return `<div class="ip-row" data-k="${k}">
+      <label><input type="checkbox" data-k="${k}"${on?' checked':''}><span class="nm">${m.label}</span>
+        <span class="mk">${IDX_MKT[m.market]}</span></label>
+      <span class="ord"></span>
+      <span class="mv">
+        <button type="button" data-mv="up" data-k="${k}" aria-label="上移">↑</button>
+        <button type="button" data-mv="down" data-k="${k}" aria-label="下移">↓</button>
+      </span>
+    </div>`;
+  }
+
+  function rowOf(k){ return pop.querySelector(`.ip-row[data-k="${k}"]`); }
+
+  function syncPop(){
+    const list = pop.querySelector('.ip-list');
+    if(!list) return;
+    // appendChild 对已存在节点是「移动」而非克隆，可原地排序且不破坏事件绑定
+    draft.forEach(k=>{ const el = rowOf(k); if(el) list.appendChild(el); });
+    const picked = draft.filter(k=>chosen.has(k));
+    picked.forEach((k,i)=>{
+      const el = rowOf(k);
+      if(el){ const o = el.querySelector('.ord'); if(o) o.textContent = String(i+1); }
+    });
+    draft.forEach(k=>{
+      const el = rowOf(k);
+      if(!el) return;
+      const on = chosen.has(k);
+      if(!on){ const o = el.querySelector('.ord'); if(o) o.textContent = ''; }
+      const cb = el.querySelector('input');
+      if(cb && cb.checked !== on) cb.checked = on;
+      el.querySelectorAll('[data-mv]').forEach(b=>{ b.disabled = !on; });
+    });
+    const n = picked.length;
+    const cnt = pop.querySelector('.cnt');
+    if(cnt){ cnt.textContent = `已选 ${n} / 6`; cnt.classList.toggle('warn', n !== 6); }
+    const ok = pop.querySelector('.ok');
+    if(ok) ok.disabled = n !== 6;
+  }
+
+  function buildPop(){
+    pop.innerHTML = `<div class="ip-hd"><b>自定义核心指数</b><small>选 6 个 · ↑↓ 调顺序</small></div>
+      <div class="ip-list">${draft.map(rowHtml).join('')}</div>
+      <div class="ip-ft">
+        <span class="cnt"></span>
+        <span class="ip-btns"><button type="button" class="reset" data-act="reset">恢复默认</button>
+          <button type="button" class="ok" data-act="ok">完成</button></span>
+      </div>`;
+    syncPop();
+  }
+
+  function openPop(){
+    draft = sel.concat(IDX_META.map(m=>m.key).filter(k=>!sel.includes(k)));
+    chosen = new Set(sel);
+    buildPop();
+    pop.hidden = false;
+    setModalLock(true);
+    btn.setAttribute('aria-expanded','true');
+    if(isPhoneView()){
+      // 手机上是底部抽屉（CSS 里 position:fixed），内联的 right/top 会把它钉死在按钮下方
+      pop.style.right = ''; pop.style.top = '';
+      return;
+    }
+    // 贴按钮下沿右对齐；左栏宽度固定，不会溢出视口
+    pop.style.right = '0px';
+    pop.style.top = (btn.offsetTop + btn.offsetHeight + 4) + 'px';
+  }
+  function closePop(){ pop.hidden = true; setModalLock(false); btn.setAttribute('aria-expanded','false'); }
+
+  btn.addEventListener('click', e=>{ e.stopPropagation(); pop.hidden ? openPop() : closePop(); });
+  pop.addEventListener('click', e=>{
+    e.stopPropagation();   // 双保险：外部点击关闭另有「是否在弹层内」的判定
+    const mv = e.target.closest('[data-mv]');
+    if(mv){
+      const k = mv.dataset.k, dir = mv.dataset.mv;
+      if(!chosen.has(k)) return;
+      const list = draft.filter(x=>chosen.has(x));
+      const i = list.indexOf(k), j = dir === 'up' ? i-1 : i+1;
+      if(j < 0 || j >= list.length) return;
+      const other = list[j];
+      const a = draft.indexOf(k), b = draft.indexOf(other);
+      draft[a] = other; draft[b] = k;      // 只在已选集合里交换，未选的项位置不动
+      syncPop();
+      return;
+    }
+    const actBtn = e.target.closest('[data-act]');
+    const act = actBtn && actBtn.dataset.act;
+    if(act === 'reset'){
+      draft = IDX_DEFAULT.concat(IDX_META.map(m=>m.key).filter(k=>!IDX_DEFAULT.includes(k)));
+      chosen = new Set(IDX_DEFAULT);
+      syncPop();
+      return;
+    }
+    if(act === 'ok'){
+      if(chosen.size !== 6) return;
+      sel = draft.filter(k=>chosen.has(k));
+      if(!sel.includes(pick)) pick = sel[0];
+      save();
+      closePop();
+      if(records[current]) render(records[current], current);
+      MIN.render(records[current], current);   // 换指数后立刻刷新分时
+    }
+  });
+  pop.addEventListener('change', e=>{
+    const cb = e.target.closest('input[type=checkbox]');
+    if(!cb) return;
+    const k = cb.dataset.k;
+    if(cb.checked){ if(chosen.size >= 6){ cb.checked = false; return; } chosen.add(k); }
+    else chosen.delete(k);
+    syncPop();   // 只同步序号 / 计数 / 禁用态，不重建 DOM
+  });
+  document.addEventListener('click', e=>{
+    if(pop.hidden) return;
+    if(pop.contains(e.target) || btn.contains(e.target)) return;   // 弹层内部一律不关
+    closePop();
+  });
+  document.addEventListener('keydown', e=>{ if(e.key === 'Escape' && !pop.hidden){ e.stopPropagation(); closePop(); } });
+  $('#dIndices').addEventListener('click', e=>{
+    const it = e.target.closest('.idx-item[data-k]');
+    if(!it) return;
+    if(it.dataset.k === pick) return;
+    pick = it.dataset.k;
+    save();
+    if(records[current]) render(records[current], current);
+    MIN.render(records[current], current);
+  });
+  $('#dIndices').addEventListener('keydown', e=>{
+    if(e.key !== 'Enter' && e.key !== ' ') return;
+    const it = e.target.closest('.idx-item[data-k]');
+    if(!it) return;
+    e.preventDefault();
+    it.click();
+  });
+
+  return {
+    render, ensureSpot, empty,
+    get pick(){ return pick; },
+    reloadSpot(){ spotAt = 0; return ensureSpot().then(()=>{ if(records[current]) render(records[current], current); }); },
+  };
+})();
+
+/* ---------- 选中指数的分时 ----------
+   取代原来的「大盘异动标注」：不再画板块异动标签，只做干净的分时线。
+   数据来自后端 /api/index/minute：当日实时 → 近 5 日回放 → 落库回放；
+   都取不到就显示等高占位块，保证切换日期时左栏不跳动。 */
+const MIN = (()=>{
+  const cache = new Map();          // key -> {ts, data}
+  const inflight = new Map();       // 同一 code|date 只发一个请求
+  const todayStr = () => { const n = new Date();
+    return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; };
+  // 只标整点/半点：1 分钟 bar 的时间戳是 bar 结束时刻（如 13:59），按步长取会标出 :59
+  const LABEL_T = new Set(['09:30','10:00','10:30','11:00','11:30','13:00','13:30',
+                           '14:00','14:30','15:00','15:30','16:00']);
+  // 数据源只作为 hover 提示，不占标题位：这行标题是给人看行情的，不是给自己看链路的
+  const SRC = {'tencent-live':'腾讯实时分时', 'tencent-5d':'腾讯近 5 日分时（含当日回放）',
+                'tencent-m5':'腾讯近 17 日 5 分钟回放', 'db':'本地落库回放',
+                'eastmoney':'东方财富分时',
+                'tencent-us':'腾讯美股分时（上一美股交易日）'};
+  let chart = null, seq = 0;
+
+  function load(code, date){
+    const k = code + '|' + date;
+    // 当日分时 30 秒内复用（与服务端 30s TTL 对齐）；历史日一次加载后不过期
+    const ttl = date === todayStr() ? 30000 : Infinity;
+    const hit = cache.get(k);
+    if(hit && Date.now() - hit.ts < ttl) return Promise.resolve(hit.data);
+    if(inflight.has(k)) return inflight.get(k);
+    const p = fetch(`api/index/minute?code=${encodeURIComponent(code)}&date=${encodeURIComponent(date)}`)
+      .then(r=>r.json())
+      .then(d=>{ cache.set(k, {ts:Date.now(), data:d}); return d; })
+      .catch(()=>({ok:false, error:'网络异常'}))
+      .finally(()=>inflight.delete(k));
+    inflight.set(k, p);
+    return p;
+  }
+
+  /* 图表实例只在容器**已经有尺寸**时创建：早先是在 `dMiniWrap` 还是 hidden 的时候 init，
+     ECharts 会按 0×0 建画布，之后容器显示出来也只会剩一块空白（手机上那块空白就是这么来的）。
+     创建后交给 ResizeObserver 兜底，折叠卡片、切电脑视图、转屏都能自己校正。 */
+  function ensureChart(){
+    const el = $('#dMiniChart');
+    if(!el || !window.echarts) return null;
+    if(!chart){
+      if(!el.clientWidth || !el.clientHeight) return null;
+      chart = echarts.init(el, null, {renderer:'canvas'});
+      if(window.ResizeObserver){
+        new ResizeObserver(()=>{ if(chart) requestAnimationFrame(()=>chart.resize()); }).observe(el);
+      }
+    }
+    return chart;
+  }
+
+  function draw(d){
+    const el = $('#dMiniChart');
+    if(!window.echarts || !el) return;
+    if(!ensureChart()) return;          // 没尺寸就先不画，等下一次 render / resize
+    chart.resize();
+    const pts = d.points || [];
+    if(!pts.length) return;
+    const times = pts.map(p=>p[0]), prices = pts.map(p=>p[1]);
+    const prev = Number(d.prevClose) || prices[0];
+    // 以昨收为中心做对称区间：上下振幅视觉等价，不会因自适应缩放把微跌画成大跳水
+    let dev = 0;
+    prices.forEach(v=>{ dev = Math.max(dev, Math.abs(v - prev)); });
+    if(!dev) dev = Math.max(prev * 0.003, 0.5);
+    const lo = prev - dev * 1.15, hi = prev + dev * 1.15;
+    const last = prices[prices.length-1];
+    const up = last >= prev;
+    // 语义色统一从 :root token 读，禁止在 JS 里再写死第三个绿/红
+    const cs = getComputedStyle(document.documentElement);
+    const C_UP = cs.getPropertyValue('--up').trim() || '#DC2626';
+    const C_DN = cs.getPropertyValue('--dn').trim() || '#047857';
+    const C_AXIS = '#64748B';                       // 4.8:1，替代 #94A3B8
+    const C = up ? C_UP : C_DN;
+    const fmtPx = v => Math.abs(v) >= 1000 ? v.toFixed(0)
+                 : Math.abs(v) >= 100 ? v.toFixed(1)
+                 : v.toFixed(2);
+    const chartH = $('#dMiniChart')?.clientHeight || 96;
+    const compact = chartH < 110;
+    const pct = prev ? (last - prev) / prev * 100 : 0;
+    const cap = $('#dMiniCap');
+    if(cap){
+      cap.innerHTML = `<b style="color:${C}">${esc(d.name)} ${num2(last)}</b>` +
+        `<span style="color:${C};margin-left:3px">${pct>0?'+':''}${pct.toFixed(2)}%</span>`;
+      cap.title = SRC[d.source] ? `数据源：${SRC[d.source]}` : '';
+    }
+    chart.setOption({
+      animation: false,
+      grid: {left: 6, right: 44, top: compact ? 4 : 20, bottom: compact ? 4 : 16},
+      tooltip: {
+        trigger: 'axis', confine: true, backgroundColor: 'rgba(15,23,42,.94)',
+        borderWidth: 0, padding: [5, 9], textStyle: {color:'#fff', fontSize:11},
+        axisPointer: {type:'line', lineStyle:{color:'#CBD5E1'}},
+        formatter(ps){
+          const p = ps[0], i = p.dataIndex, v = prices[i];
+          const r2 = prev ? (v - prev) / prev * 100 : 0;
+          return `<b>${times[i]}</b> ${num2(v)} ` +
+            `<span style="color:${r2>=0?'#F87171':'#6EE7B7'}">${r2>0?'+':''}${r2.toFixed(2)}%</span>`;
+        }
+      },
+      xAxis: {type:'category', data: times, boundaryGap: false,
+        axisLine:{lineStyle:{color:'#E7EBF2'}}, axisTick:{show:false},
+        axisLabel:{fontSize:10, color:C_AXIS, show:!compact,
+          interval:(i,v)=> LABEL_T.has(v)},
+        splitLine:{show:false}},
+      yAxis: {min: lo, max: hi, position: 'right',
+        axisLine:{show:false}, axisTick:{show:false},
+        splitLine:{lineStyle:{color:'#F1F5F9'}},
+        axisLabel:{fontSize:10, color:C_AXIS, show:!compact, formatter:fmtPx}},
+      series: [{
+        type: 'line', data: prices, showSymbol: false,
+        lineStyle: {width: 1.3, color: C},
+        areaStyle: {color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+          {offset: 0, color: up ? 'rgba(220,38,38,.15)' : 'rgba(4,120,87,.15)'},
+          {offset: 1, color: 'rgba(255,255,255,0)'}])},
+        markLine: {silent:true, symbol:'none', label:{show:!compact, formatter:'昨收 '+fmtPx(prev), color:C_AXIS, fontSize:10, position:'insideEndTop'},
+          lineStyle:{color:'#B4BECB', type:'dashed', width:1},
+          data:[{yAxis: prev}]}
+      }]
+    }, true);
+  }
+
+  async function render(r, idx){
+    const wrap = $('#dMiniWrap'), emptyEl = $('#dMiniEmpty');
+    if(!wrap || !emptyEl || !r) return;
+    const my = ++seq;
+    // 手机单栏不放分时图：卡片本身就够窄，一段 130px 的分时会把「市场广度 / 题材」
+    // 推到第二屏。这里直接不请求也不显示；切到「电脑视图」时 relayout 会重新拉一次。
+    if(isPhoneView()){
+      wrap.hidden = true;
+      emptyEl.hidden = true;
+      return;
+    }
+    const code = IDX.pick;
+    const d = await load(code, r.date);
+    if(my !== seq) return;                    // 期间用户切了日期或指数
+    // 画不出来时给一句实话，而不是留一块 170px 的空白让用户以为页面坏了
+    if(!window.echarts){
+      if(chart) chart.clear();
+      wrap.hidden = true;
+      emptyEl.hidden = false;
+      const b = emptyEl.querySelector('b'), sp = emptyEl.querySelector('span');
+      if(b) b.textContent = _ecFail
+        ? `${IDX_MAP[code].label} · 分时图组件加载失败`
+        : `${IDX_MAP[code].label} · 分时图组件加载中…`;
+      // 失败时把「更早日期可能缺失」那句换掉：这里根本不是缺数据，是脚本没拿到
+      if(sp) sp.textContent = _ecFail
+        ? '图表脚本 vendor/echarts.slim.js 请求失败（检查 nginx 是否放行 /vendor、该文件是否存在），修好后刷新即可'
+        : '分时自上线起逐日积累，更早的日期可能缺失';
+      return;
+    }
+    if(!d || !d.ok){
+      if(chart) chart.clear();
+      wrap.hidden = true;
+      emptyEl.hidden = false;
+      const b = emptyEl.querySelector('b'), sp = emptyEl.querySelector('span');
+      if(b) b.textContent = `${IDX_MAP[code].label} · 该交易日分时暂未收录`;
+      if(sp) sp.textContent = '分时自上线起逐日积累，更早的日期可能缺失';
+      return;
+    }
+    emptyEl.hidden = true;
+    wrap.hidden = false;
+    // 等一帧：刚取消 hidden 时容器尺寸还没算出来，同帧 init 会拿到 0×0
+    requestAnimationFrame(()=>{ if(my === seq) draw(d); });
+  }
+
+  window.addEventListener('resize', ()=>{ if(chart && !$('#dMiniWrap').hidden) chart.resize(); });
+  /* 切「电脑视图 / 手机版」不触发 window.resize，用自定义事件补一次：
+     手机→电脑视图要把分时拉回来，电脑→手机要把它收掉 */
+  document.addEventListener('a3x1:relayout', ()=>{
+    if(isPhoneView()){
+      const w = $('#dMiniWrap'), e = $('#dMiniEmpty');
+      if(w) w.hidden = true;
+      if(e) e.hidden = true;
+      return;
+    }
+    if(chart && !$('#dMiniWrap').hidden) requestAnimationFrame(()=>chart.resize());
+    if(records[current]) render(records[current], current);
+  });
+  return {render, clear(){ if(chart) chart.clear(); cache.clear(); }};
+})();
+
+/* 启动后补一次实时快照（不含在 records.json 里）：最新交易日的港股/海外指数用它刷新 */
+IDX.ensureSpot().then(s=>{ if(Object.keys(s).length && records[current]) IDX.render(records[current], current); });
+/* 原来只拉这一次，页面挂久了海外指数就永远停在打开时的值。补一个低频刷新：
+   仅在当前看的确实是「今天」时更新，历史日不被实时值污染；后台标签页不发请求。 */
+setInterval(()=>{
+  if(document.hidden || !records.length) return;
+  const n = new Date();
+  const today = `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
+  if(records[current] && records[current].date === today) IDX.reloadSpot();
+}, 60000);
+
+/* ---------- 悬浮个股日K / 分时（新浪静态图） ----------
+   卡片里就是两张 gif：image.sinajs.cn/newchart/{daily,min}/n/{sym}.gif，各 545×300、共约 18KB。
+   浏览器直连新浪 CDN，本站后端只回答两件事：「名称 → 代码」和「现在多少钱」（一次批量报价）。
+   不再为每只票去上游抓 K 线、跑 pandas、写磁盘缓存（原方案 44MB），也不吃行情接口的限流额度。
+   代价是图上没有十字光标和 OHLC 提示、带新浪水印——换的是零等待、零采集压力。 */
+const KP = (()=>{
+  const el = $('#kp'), sp = $('#kpSina'), emp = $('#kpEmpty');
+  if(!el) return null;
+  let showTimer = null, hideTimer = null, seq = 0;
+  let pinned = false, lastFocus = null, lastTarget = null;
+  const peekCache = new Map();
+  const peekPending = new Map();
+  const PEEK_TTL = 30000;
+  const SINA = 'https://image.sinajs.cn/newchart';
+  const cls = v => v > 0 ? 'up' : v < 0 ? 'down' : 'flat';
+
+  /* 名称 → {symbol, price, pct...}：后端本地查表同步出代码，报价在后台补。
+     前端缓存：有价格的按 30 秒；只有代码（报价还在后台拉）的只缓存 1 秒，
+     下次悬停就能带上刚补回来的价，不会因为一次缓存把价格永久吃掉。 */
+  function peek(name){
+    const hit = peekCache.get(name);
+    const ttl = (hit && hit.symbol && hit.price == null) ? 1000 : PEEK_TTL;
+    if(hit && Date.now() - hit.t < ttl) return Promise.resolve(hit);
+    if(peekPending.has(name)) return peekPending.get(name);
+    const p = fetch('api/stock/peek?names=' + encodeURIComponent(name))
+      .then(r=>r.json())
+      .then(d=>{
+        const it = (d && d.items && d.items[name]) || null;
+        const v = it ? {t: Date.now(), ...it} : {t: Date.now(), symbol: null};
+        peekCache.set(name, v);
+        return v;
+      })
+      .catch(()=>null)
+      .finally(()=>peekPending.delete(name));
+    peekPending.set(name, p);
+    return p;
+  }
+  /* 切到榜单页时把视口内这批名字一次查完：之后悬停同步命中，零请求零等待 */
+  function primePeek(names){
+    const need = names.filter(n=>{
+      const h = peekCache.get(n);
+      return n && !(h && Date.now() - h.t < PEEK_TTL) && !peekPending.has(n);
+    });
+    if(!need.length) return;
+    const batch = need.slice(0, 40);
+    fetch('api/stock/peek?names=' + encodeURIComponent(batch.join(',')))
+      .then(r=>r.json())
+      .then(d=>{
+        const items = (d && d.items) || {};
+        batch.forEach(n=>peekCache.set(n, {t: Date.now(), ...(items[n] || {symbol: null})}));
+      })
+      .catch(()=>{});
+  }
+
+  /* 位置：优先放在触发元素右侧，越界则翻到左侧/上方。
+     宽度必须读实际值而不是写死——2K/4K 缩放下 CSS 像素会变。 */
+  function place(target){
+    if(!target) return;
+    const r = target.getBoundingClientRect();
+    const W = el.offsetWidth || 573, H = el.offsetHeight || 680, pad = 14;
+    let x = r.right + pad;
+    if(x + W > window.innerWidth - 10) x = r.left - W - pad;
+    if(x < 10) x = Math.min(window.innerWidth - W - 10, Math.max(10, r.left));
+    let y = r.top - 6;
+    y = Math.max(10, Math.min(y, window.innerHeight - H - 10));
+    el.style.left = Math.max(8, x) + 'px';
+    el.style.top = y + 'px';
+  }
+
+  function fillHeader(name, sym, q){
+    $('#kpName').textContent = name;
+    $('#kpCode').textContent = sym ? sym.slice(2) : '—';
+    if(q && q.price != null){
+      $('#kpPx').textContent = Number(q.price).toFixed(2);
+      const c = cls(q.pct == null ? 0 : q.pct);
+      $('#kpPx').className = 'px ' + c;
+      $('#kpChg').className = 'chg ' + c;
+      $('#kpChg').textContent = q.pct == null ? '' : (q.pct >= 0 ? '+' : '') + Number(q.pct).toFixed(2) + '%';
+    }else{
+      $('#kpPx').textContent = '';
+      $('#kpPx').className = 'px';
+      $('#kpChg').textContent = '';
+      $('#kpChg').className = 'chg';
+    }
+  }
+
+  function showSina(name, sym, q){
+    fillHeader(name, sym, q);
+    emp.hidden = true;
+    // 分钟图按「分钟」换 URL：既不会拿到几分钟前的旧图，也不会每次悬停都穿透 CDN 缓存
+    const stamp = Math.floor(Date.now() / 60000);
+    const safeSym = encodeURIComponent(String(sym || ''));
+    sp.hidden = false;
+    sp.innerHTML =
+      `<img alt="${esc(name)} 日K" referrerpolicy="no-referrer" decoding="async" src="${SINA}/daily/n/${safeSym}.gif">`
+      + `<img alt="${esc(name)} 分时" referrerpolicy="no-referrer" decoding="async" src="${SINA}/min/n/${safeSym}.gif?_=${stamp}">`;
+    sp.querySelectorAll('img').forEach(img=>{
+      img.addEventListener('error', ()=>{
+        // 新浪图挂了（断网/被拦/防盗链变更）→ 给一句实话，别留破图
+        if(!sp.hidden) fail(name, 'neterr');
+      }, {once:true});
+    });
+    // 图片撑开后卡片高度才定下来，按新高度重算一次位置，别溢出视口下沿
+    requestAnimationFrame(()=>place(lastTarget));
+  }
+
+  function fail(name, kind){
+    sp.hidden = true;
+    sp.innerHTML = '';
+    fillHeader(name, null, null);
+    emp.hidden = false;
+    emp.innerHTML = kind === 'neterr'
+      ? '行情图暂时取不到<br><span style="font-size:11.5px">新浪图片接口没有响应，稍后再试</span>'
+      : `未匹配到「${esc(name)}」的代码<br><span style="font-size:11.5px">可能是改名、退市或长期停牌</span>`;
+  }
+
+  function loading(){
+    $('#kpName').textContent = '加载中…';
+    $('#kpCode').textContent = '—';
+    $('#kpPx').textContent = '';
+    $('#kpChg').textContent = '';
+    emp.hidden = true;
+    sp.hidden = true;
+    sp.innerHTML = '';
+  }
+
+  async function open(target, asPinned){
+    const name = target.dataset.stock;
+    const date = (records[0] && records[0].date) || target.dataset.date;
+    if(!name || !date) return;
+    const key = name + '|' + date;
+    lastTarget = target;
+    // 同一只票已经开着：点击只是把它钉住，不必重绘（重绘会闪一下）
+    if(asPinned && !el.hidden && el.dataset.key === key){
+      pinned = true;
+      if(window.innerWidth <= 960) $('#kpBd').classList.add('on');
+      return;
+    }
+    pinned = !!asPinned;
+    if(pinned){
+      lastFocus = document.activeElement;
+      if(window.innerWidth <= 960){ $('#kpBd').classList.add('on'); setModalLock(true); }
+    }
+    el.hidden = false;
+    el.dataset.key = key;
+    place(target);
+    requestAnimationFrame(()=>el.classList.add('on'));
+    if(pinned && window.innerWidth <= 960){
+      setTimeout(()=>{ try{ $('#kpClose').focus({preventScroll:true}); }catch(e){} }, 40);
+    }
+
+    const my = ++seq;
+    loading();
+    const pk = await peek(name);          // 只查代码 + 快照，毫秒级
+    if(my !== seq) return;
+    if(pk && pk.symbol) showSina(name, pk.symbol, pk);
+    else fail(name, 'nosym');
+  }
+
+  function hide(delay = 0){
+    clearTimeout(showTimer);
+    hideTimer = setTimeout(()=>{
+      const wasPinned = pinned;
+      el.classList.remove('on');
+      $('#kpBd').classList.remove('on');
+      if(wasPinned) setModalLock(false);
+      pinned = false;
+      setTimeout(()=>{ if(!el.classList.contains('on')) el.hidden = true; }, 180);
+      // 只有"点开"的卡片需要还焦点；悬停弹出的不抢焦点
+      if(wasPinned && lastFocus && lastFocus.focus){
+        try{ lastFocus.focus({preventScroll:true}); }catch(e){}
+      }
+      lastFocus = null;
+    }, delay);
+  }
+  function cancelHide(){ clearTimeout(hideTimer); }
+
+  document.addEventListener('mouseover', e=>{
+    const t = e.target.closest('.has-chart');
+    if(!t || window.innerWidth < 900) return;
+    cancelHide();
+    clearTimeout(showTimer);
+    // 先查代码（毫秒级，多半已被 primePeek 命中），再延时出场：观感接近"秒开"
+    // 悬浮统一看最新：天梯格上的 data-date 只代表"那天它涨停"，
+    // 用户要看的是这只票现在的日K与分时，历史列日期反而让人误以为图是旧的
+    const nm = t.dataset.stock;
+    if(nm) peek(nm);
+    showTimer = setTimeout(()=>{
+      if(pinned && el.dataset.key === (nm + '|' + ((records[0] && records[0].date) || t.dataset.date))) return;
+      open(t);
+    }, 150);
+  });
+  document.addEventListener('mouseout', e=>{
+    const t = e.target.closest('.has-chart');
+    if(!t) return;
+    clearTimeout(showTimer);
+    if(!pinned && !el.contains(e.relatedTarget)) hide(220);
+  });
+  el.addEventListener('mouseenter', cancelHide);
+  el.addEventListener('mouseleave', ()=>{ if(!pinned) hide(160); });
+  // 触屏没有 hover、键盘也不会触发 mouseover：点击/回车也能打开，且钉住不自动关
+  document.addEventListener('click', e=>{
+    if(e.target.closest('#kp')) return;
+    const t = e.target.closest('.has-chart');
+    if(t){ e.preventDefault(); open(t, true); return; }
+    if(!el.hidden) hide(0);
+  });
+  $('#kpBd').addEventListener('click', ()=>hide(0));
+  $('#kpClose').addEventListener('click', ()=>hide(0));
+  document.addEventListener('keydown', e=>{ if(e.key === 'Escape') hide(0); });
+  // 抓捕获阶段：表格/左栏内部滚动不冒泡到 window，只在 window 上监听会让卡片
+  // 与个股脱节（个股滚走了，卡片还钉在原地）
+  document.addEventListener('scroll', ()=>hide(0), {passive:true, capture:true});
+
+  return {hide, open, primePeek};
+})();
+
+async function start(){
+  // 先读走调试参数：selectDay 会重写 hash，之后的 URLSearchParams 就拿不到了
+  const hq = new URLSearchParams(location.hash.replace(/^#/,''));
+  const kpName = hq.get('kp');
+  const dayParam = hq.get('d');  // 调试用：#d=2026-06-15 直接打开某历史日（用后即弃）
+  // 兜底：静态数据取不到时不能永远转圈，给一个明确失败出口
+  const guard = setTimeout(()=>{
+    if(!$('#boot').classList.contains('done')) bootError();
+  }, 14000);
+  const ok = await loadRecords();
+  clearTimeout(guard);
+  if(!ok) return;
+  restoreState();
+  if(dayParam){
+    const di = records.findIndex(x=>x.date===dayParam);
+    if(di >= 0) current = di;
+  }
+  // 分时/日K要 ECharts：桌面首屏要画，立刻并行拉起来（不 await，别挡首屏）；
+  // 手机端不加载，等用户点「电脑视图」再按需拉。
+  if(!isPhoneView()){
+    loadEcharts().then(ok=>{
+      if(ok) return document.dispatchEvent(new CustomEvent('a3x1:relayout'));
+      // 只重试一次：弱网/缓存回源的瞬时失败能自愈；真 404 也不会变成死循环
+      setTimeout(()=>{
+        loadEcharts().then(ok2=>{ if(ok2) document.dispatchEvent(new CustomEvent('a3x1:relayout')); });
+      }, 1500);
+    });
+  }
+  // 首屏不写 hash：URL 保持干净，只有用户主动点标签/选日期才出现 #tab=...
+  selectDay(current, false);
+  // 调试用：#mp=2026-06 直接定位到该月最后交易日（与月份选择器同一逻辑，用后即弃）
+  // 必须在 selectDay 之后：selectDay 会把「选中行不在当前页」的视图拉回该行所在页
+  const mpParam = hq.get('mp');
+  if(mpParam && /^\d{4}-\d{2}$/.test(mpParam)){
+    monthFilter = mpParam;
+    viewStart = Math.max(0, records.findIndex(x=>x.date.slice(0,7)===mpParam));
+    renderTable();
+  }
+  renderMatrices();
+  $('#boot').classList.add('done');
+  // 调试用：#kp=股票名 可直接打开悬浮卡片
+  if(kpName){
+    setTimeout(()=>{
+      const el = [...document.querySelectorAll('.has-chart')]
+        .find(x=>x.dataset.stock===kpName && x.getClientRects().length);
+      if(el) el.dispatchEvent(new MouseEvent('mouseover', {bubbles:true}));
+    }, 350);
+  }
+}
+start();
+</script>
+</body>
+</html>
